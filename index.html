@@ -2,19 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>WebBox V4 - Big Update</title>
+    <title>WebBox V5</title>
     <style>
         body { margin: 0; display: flex; background: #1a1a1a; color: white; font-family: sans-serif; overflow: hidden; }
         #sidebar { width: 260px; background: #333; height: 100vh; padding: 15px; box-sizing: border-box; border-right: 3px solid #444; overflow-y: auto; }
         #gameCanvas { background: #2d5a27; flex-grow: 1; cursor: crosshair; }
-        
         button { width: 100%; padding: 10px; margin-bottom: 8px; cursor: pointer; background: #444; color: white; border: 1px solid #666; border-radius: 4px; }
         button:hover { background: #555; }
         button.active { background: #e67e22; border-color: #fff; }
-        .spawn-blue { border-left: 10px solid #3498db; }
-        .spawn-red { border-left: 10px solid #e74c3c; }
         .wall-btn { background: #27ae60; margin-top: 10px; }
-        
+        .team-blue-btn { background: #3498db; }
+        .team-red-btn { background: #e74c3c; }
         .stat-panel { background: #222; padding: 10px; border-radius: 5px; margin-bottom: 10px; font-size: 0.85em; }
         h2 { margin: 0 0 10px 0; color: #f1c40f; text-align: center; }
         hr { border: 0; border-top: 1px solid #555; margin: 10px 0; }
@@ -23,14 +21,18 @@
 <body>
 
     <div id="sidebar">
-        <h2>WEBBOX V4</h2>
+        <h2>WEBBOX V5</h2>
         <div class="stat-panel">
             Blue: <span id="count-blue">0</span> | Red: <span id="count-red">0</span><br>
-            Tool: <span id="current-tool">Spawn Blue</span>
+            Tool: <span id="current-tool">Spawn Normal</span>
         </div>
         
-        <button onclick="setPower('spawn-blue', this)" class="active spawn-blue">Spawn Blue</button>
-        <button onclick="setPower('spawn-red', this)" class="spawn-red">Spawn Red</button>
+        <button id="teamToggle" onclick="toggleTeam()" class="team-blue-btn">Current Team: BLUE</button>
+        <hr>
+        <button onclick="setPower('spawn-normal', this)" class="active">Spawn Normal</button>
+        <button onclick="setPower('spawn-archer', this)">Spawn Archer</button>
+        <button onclick="setPower('spawn-knight', this)">Spawn Knight</button>
+        <button onclick="setPower('spawn-ninja', this)">Spawn Ninja</button>
         <hr>
         <button onclick="setPower('weapon', this)">Give Weapon</button>
         <button onclick="setPower('fire', this)">Fire Power</button>
@@ -50,7 +52,9 @@
         const toolDisplay = document.getElementById('current-tool');
 
         let people = [];
-        let currentPower = 'spawn-blue';
+        let projectiles = [];
+        let currentPower = 'spawn-normal';
+        let currentTeam = 'blue';
         let wallOpen = false;
 
         function resize() {
@@ -60,10 +64,25 @@
         window.addEventListener('resize', resize);
         resize();
 
+        function toggleTeam() {
+            let btn = document.getElementById('teamToggle');
+            if (currentTeam === 'blue') {
+                currentTeam = 'red';
+                btn.className = 'team-red-btn';
+                btn.innerText = 'Current Team: RED';
+            } else {
+                currentTeam = 'blue';
+                btn.className = 'team-blue-btn';
+                btn.innerText = 'Current Team: BLUE';
+            }
+        }
+
         function setPower(power, btn) {
             currentPower = power;
-            toolDisplay.innerText = power.toUpperCase();
-            document.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+            toolDisplay.innerText = power.replace('spawn-', '').toUpperCase();
+            document.querySelectorAll('button').forEach(b => {
+                if(b.id !== 'teamToggle' && !b.classList.contains('wall-btn')) b.classList.remove('active');
+            });
             btn.classList.add('active');
         }
 
@@ -72,12 +91,43 @@
             document.getElementById('wall-status').innerText = wallOpen ? "OPEN" : "CLOSED";
         }
 
+        class Projectile {
+            constructor(x, y, target, dmg, team) {
+                this.x = x;
+                this.y = y;
+                this.target = target;
+                this.dmg = dmg;
+                this.team = team;
+                let angle = Math.atan2(target.y - y, target.x - x);
+                this.vx = Math.cos(angle) * 8;
+                this.vy = Math.sin(angle) * 8;
+                this.active = true;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) this.active = false;
+                
+                if (this.target && this.target.hp > 0 && Math.hypot(this.x - this.target.x, this.y - this.target.y) < 20) {
+                    this.target.hp -= this.dmg;
+                    this.active = false;
+                }
+            }
+            draw() {
+                ctx.fillStyle = 'white';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 4, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
         class Person {
-            constructor(x, y, team) {
+            constructor(x, y, team, role) {
                 this.x = x;
                 this.y = y;
                 this.team = team;
-                this.hp = 100;
+                this.role = role; 
+                this.hp = role === 'knight' ? 150 : 100;
                 
                 this.hasFire = false;
                 this.hasIce = false;
@@ -87,6 +137,8 @@
                 
                 this.freezeTimer = 0; 
                 this.blindTimer = 0;
+                this.cooldown = 0;
+                this.ninjaOrbitDir = Math.random() > 0.5 ? 1 : -1;
 
                 this.vx = 0;
                 this.vy = 0;
@@ -108,6 +160,19 @@
                 ctx.fillRect(this.x - 8, this.y + 18, 6, 14);
                 ctx.fillRect(this.x + 2, this.y + 18, 6, 14);
 
+                if (this.role === 'knight') {
+                    ctx.fillStyle = 'gray';
+                    ctx.fillRect(this.x - 10, this.y - 6, 20, 24); 
+                } else if (this.role === 'ninja') {
+                    ctx.fillStyle = 'black';
+                    ctx.fillRect(this.x - 8, this.y - 18, 16, 6); 
+                } else if (this.role === 'archer') {
+                    ctx.fillStyle = '#2ecc71';
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y - 22, 6, 0, Math.PI); 
+                    ctx.fill();
+                }
+
                 if (this.hasLight) {
                     ctx.strokeStyle = 'yellow';
                     ctx.lineWidth = 4;
@@ -115,7 +180,6 @@
                     ctx.arc(this.x, this.y, 44, 0, Math.PI * 2);
                     ctx.stroke();
                 }
-
                 if (this.hasFire) {
                     ctx.strokeStyle = 'red';
                     ctx.lineWidth = 4;
@@ -123,7 +187,6 @@
                     ctx.arc(this.x, this.y, 40, 0, Math.PI * 2);
                     ctx.stroke();
                 }
-
                 if (this.hasWind) {
                     ctx.strokeStyle = 'white';
                     ctx.lineWidth = 4;
@@ -157,6 +220,7 @@
             }
 
             update() {
+                if (this.cooldown > 0) this.cooldown--;
                 let nearestEnemy = null;
                 let minDist = Infinity;
 
@@ -189,10 +253,47 @@
                     this.blindTimer--;
                 }
 
+                let speedLimit = 2.5;
+
                 if (nearestEnemy) {
                     let angle = Math.atan2(nearestEnemy.y - this.y, nearestEnemy.x - this.x);
-                    this.vx += Math.cos(angle) * 0.15; 
-                    this.vy += Math.sin(angle) * 0.15;
+                    
+                    if (this.role === 'knight' && this.hp < 10) {
+                        this.vx -= Math.cos(angle) * 0.3; 
+                        this.vy -= Math.sin(angle) * 0.3;
+                        speedLimit = 3.5; 
+                    } 
+                    else if (this.role === 'ninja') {
+                        speedLimit = 4.0;
+                        if (minDist < 60 && minDist > 30) {
+                            let orbitAngle = angle + (Math.PI / 2) * this.ninjaOrbitDir;
+                            this.vx += Math.cos(orbitAngle) * 0.4;
+                            this.vy += Math.sin(orbitAngle) * 0.4;
+                        } else {
+                            this.vx += Math.cos(angle) * 0.3;
+                            this.vy += Math.sin(angle) * 0.3;
+                        }
+                    }
+                    else if (this.role === 'archer') {
+                        if (minDist < 250 && (wallOpen || Math.abs(this.x - nearestEnemy.x) > 30)) {
+                            if (this.cooldown <= 0) {
+                                let dmg = this.hasFire ? 15 : 5;
+                                projectiles.push(new Projectile(this.x, this.y, nearestEnemy, dmg, this.team));
+                                this.cooldown = 80;
+                            }
+                            if (minDist < 100) {
+                                this.vx -= Math.cos(angle) * 0.2;
+                                this.vy -= Math.sin(angle) * 0.2;
+                            }
+                        } else {
+                            this.vx += Math.cos(angle) * 0.15;
+                            this.vy += Math.sin(angle) * 0.15;
+                        }
+                    }
+                    else {
+                        this.vx += Math.cos(angle) * 0.15; 
+                        this.vy += Math.sin(angle) * 0.15;
+                    }
                 } else {
                     this.vx += (Math.random() - 0.5) * 0.5;
                     this.vy += (Math.random() - 0.5) * 0.5;
@@ -201,11 +302,11 @@
                 this.vx *= 0.90;
                 this.vy *= 0.90;
 
-                let maxSpeed = this.freezeTimer > 0 ? 0.4 : 2.5; 
+                if (this.freezeTimer > 0) speedLimit = 0.4; 
                 let speed = Math.hypot(this.vx, this.vy);
-                if (speed > maxSpeed) {
-                    this.vx = (this.vx / speed) * maxSpeed;
-                    this.vy = (this.vy / speed) * maxSpeed;
+                if (speed > speedLimit) {
+                    this.vx = (this.vx / speed) * speedLimit;
+                    this.vy = (this.vy / speed) * speedLimit;
                 }
 
                 this.x += this.vx;
@@ -229,13 +330,15 @@
                 if (this.y < 15) this.y = 15;
                 if (this.y > canvas.height - 15) this.y = canvas.height - 15;
 
-                if (nearestEnemy) {
+                if (nearestEnemy && this.role !== 'archer') {
                     const dist = Math.hypot(this.x - nearestEnemy.x, this.y - nearestEnemy.y);
                     let reach = this.weapon === 'spear' ? 60 : 40;
                     
                     if (dist < reach && (wallOpen || Math.abs(this.x - nearestEnemy.x) > 30)) {
                         let dmg = 0.5;
-                        if (this.hasFire) dmg = 2.0;
+                        if (this.role === 'knight') dmg = 1.5;
+                        if (this.role === 'ninja') dmg = 1.2;
+                        if (this.hasFire) dmg *= 2.0;
                         if (this.weapon === 'sword') dmg += 0.5;
                         if (this.weapon === 'spear') dmg += 0.3;
                         if (this.hasLight) dmg += 1.0;
@@ -246,8 +349,11 @@
                             nearestEnemy.hp -= 0.5; 
                             nearestEnemy.freezeTimer = 60; 
                         }
-                        if (this.hasLight) {
-                            nearestEnemy.blindTimer = 80;
+                        if (this.hasLight) nearestEnemy.blindTimer = 80;
+                        
+                        if (this.role === 'ninja') {
+                            this.vx -= Math.cos(Math.atan2(nearestEnemy.y - this.y, nearestEnemy.x - this.x)) * 10;
+                            this.vy -= Math.sin(Math.atan2(nearestEnemy.y - this.y, nearestEnemy.x - this.x)) * 10;
                         }
                     }
                 }
@@ -259,9 +365,10 @@
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
 
-            if (currentPower === 'spawn-blue') people.push(new Person(x, y, 'blue'));
-            else if (currentPower === 'spawn-red') people.push(new Person(x, y, 'red'));
-            else {
+            if (currentPower.startsWith('spawn-')) {
+                let role = currentPower.split('-')[1];
+                people.push(new Person(x, y, currentTeam, role));
+            } else {
                 people.forEach(p => {
                     const dist = Math.hypot(p.x - x, p.y - y);
                     if (dist < 100) {
@@ -293,6 +400,12 @@
                 p.update();
                 p.draw();
             });
+            
+            projectiles.forEach(proj => {
+                proj.update();
+                proj.draw();
+            });
+            projectiles = projectiles.filter(p => p.active);
 
             document.getElementById('count-blue').innerText = b;
             document.getElementById('count-red').innerText = r;
@@ -303,4 +416,3 @@
     </script>
 </body>
 </html>
-

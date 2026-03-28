@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>WebBox: Smart AI War</title>
+    <title>WebBox: Humanoids and Light</title>
     <style>
         body { margin: 0; display: flex; background: #1a1a1a; color: white; font-family: sans-serif; overflow: hidden; }
         #sidebar { width: 260px; background: #333; height: 100vh; padding: 15px; box-sizing: border-box; border-right: 3px solid #444; overflow-y: auto; }
         #gameCanvas { background: #2d5a27; flex-grow: 1; cursor: crosshair; }
         
-        button { width: 100%; padding: 10px; margin-bottom: 8px; cursor: pointer; background: #444; color: white; border: 1px solid #666; border-radius: 4px; font-weight: bold; }
+        button { width: 100%; padding: 10px; margin-bottom: 8px; cursor: pointer; background: #444; color: white; border: 1px solid #666; border-radius: 4px; }
         button:hover { background: #555; }
         button.active { background: #e67e22; border-color: #fff; }
         .spawn-blue { border-left: 10px solid #3498db; }
@@ -26,17 +26,18 @@
         <h2>WEBBOX PRO</h2>
         <div class="stat-panel">
             Blue: <span id="count-blue">0</span> | Red: <span id="count-red">0</span><br>
-            Tool: <b id="current-tool">Spawn Blue</b>
+            Tool: <span id="current-tool">Spawn Blue</span>
         </div>
         
         <button onclick="setPower('spawn-blue', this)" class="active spawn-blue">Spawn Blue</button>
         <button onclick="setPower('spawn-red', this)" class="spawn-red">Spawn Red</button>
         <hr>
-        <button onclick="setPower('weapon', this)">🗡️ Give Weapon</button>
-        <button onclick="setPower('fire', this)">🔥 Fire Power</button>
-        <button onclick="setPower('ice', this)">❄️ Ice Power</button>
-        <button onclick="setPower('wind', this)">🌪️ Wind Power</button>
-        <button onclick="setPower('strike', this)">⚡ Lightning</button>
+        <button onclick="setPower('weapon', this)">Give Weapon</button>
+        <button onclick="setPower('fire', this)">Fire Power</button>
+        <button onclick="setPower('ice', this)">Ice Power</button>
+        <button onclick="setPower('light', this)">Light Power</button>
+        <button onclick="setPower('wind', this)">Wind Power</button>
+        <button onclick="setPower('strike', this)">Lightning</button>
         <hr>
         <button class="wall-btn" onclick="toggleWall()">Toggle Wall: <span id="wall-status">CLOSED</span></button>
     </div>
@@ -78,96 +79,101 @@
                 this.y = y;
                 this.team = team;
                 this.hp = 100;
-                this.size = 7;
                 
-                // Powers
                 this.hasFire = false;
                 this.hasIce = false;
+                this.hasLight = false;
                 this.weapon = null; 
                 
-                // Status Effects applied by enemies
                 this.freezeTimer = 0; 
+                this.blindTimer = 0;
 
                 this.vx = 0;
                 this.vy = 0;
             }
 
             draw() {
-                // Base color
-                ctx.fillStyle = this.team === 'blue' ? '#3498db' : '#e74c3c';
-                
-                // Override color if they wield a power
-                if (this.hasFire) ctx.fillStyle = '#ff4500';
-                if (this.hasIce) ctx.fillStyle = '#a0e7ff'; 
+                let color = this.team === 'blue' ? '#3498db' : '#e74c3c';
+                if (this.hasFire) color = '#ff4500';
+                if (this.hasIce) color = '#a0e7ff'; 
 
+                ctx.fillStyle = color;
+
+                // Draw Human Shape (Head and Body)
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.arc(this.x, this.y - 6, 4, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.rect(this.x - 3, this.y - 2, 6, 12);
                 ctx.fill();
 
-                // Draw a cyan ring if they are actively frozen/slowed by an enemy
-                if (this.freezeTimer > 0) {
-                    ctx.strokeStyle = 'cyan';
+                // Yellow Border for Light Power
+                if (this.hasLight) {
+                    ctx.strokeStyle = 'yellow';
                     ctx.lineWidth = 2;
-                    ctx.stroke();
-                } else if (this.hasFire || this.hasIce) {
-                    // Glow for their own power
-                    ctx.strokeStyle = this.hasFire ? 'yellow' : 'white';
-                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, 14, 0, Math.PI * 2);
                     ctx.stroke();
                 }
 
-                // Draw Weapon
+                // Blinded indicator
+                if (this.blindTimer > 0) {
+                    ctx.fillStyle = 'black';
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y - 7, 2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
                 if (this.weapon) {
                     ctx.strokeStyle = '#ddd';
                     ctx.lineWidth = 2;
                     ctx.beginPath();
                     let length = this.weapon === 'spear' ? 15 : 8;
-                    // Point weapon in direction of movement
                     let angle = Math.atan2(this.vy, this.vx);
                     ctx.moveTo(this.x, this.y);
                     ctx.lineTo(this.x + Math.cos(angle) * length, this.y + Math.sin(angle) * length);
                     ctx.stroke();
                 }
                 
-                // Health Text
                 ctx.fillStyle = "white";
                 ctx.font = "10px Arial";
                 ctx.textAlign = "center";
-                ctx.fillText(Math.ceil(this.hp), this.x, this.y - 12);
+                ctx.fillText(Math.ceil(this.hp), this.x, this.y - 15);
             }
 
             update() {
-                // 1. Find the nearest enemy (Homing AI)
                 let nearestEnemy = null;
                 let minDist = Infinity;
 
-                people.forEach(other => {
-                    if (other.team !== this.team) {
-                        let d = Math.hypot(this.x - other.x, this.y - other.y);
-                        if (d < minDist) {
-                            minDist = d;
-                            nearestEnemy = other;
+                // Blindness removes targeting
+                if (this.blindTimer <= 0) {
+                    people.forEach(other => {
+                        if (other.team !== this.team) {
+                            let d = Math.hypot(this.x - other.x, this.y - other.y);
+                            if (d < minDist) {
+                                minDist = d;
+                                nearestEnemy = other;
+                            }
                         }
-                    }
-                });
+                    });
+                } else {
+                    this.blindTimer--;
+                }
 
-                // 2. Move towards the enemy
                 if (nearestEnemy) {
                     let angle = Math.atan2(nearestEnemy.y - this.y, nearestEnemy.x - this.x);
-                    this.vx += Math.cos(angle) * 0.15; // Accelerate towards enemy
+                    this.vx += Math.cos(angle) * 0.15; 
                     this.vy += Math.sin(angle) * 0.15;
                 } else {
-                    // Wander slightly if no enemies exist
                     this.vx += (Math.random() - 0.5) * 0.5;
                     this.vy += (Math.random() - 0.5) * 0.5;
                 }
 
-                // 3. Apply Friction (smooths movement and allows wind to work)
                 this.vx *= 0.90;
                 this.vy *= 0.90;
 
-                // 4. Apply Speed Limits & Freeze Status
-                let maxSpeed = this.freezeTimer > 0 ? 0.4 : 2.5; // Walk much slower if frozen
+                let maxSpeed = this.freezeTimer > 0 ? 0.4 : 2.5; 
                 let speed = Math.hypot(this.vx, this.vy);
                 if (speed > maxSpeed) {
                     this.vx = (this.vx / speed) * maxSpeed;
@@ -179,48 +185,47 @@
                 
                 if (this.freezeTimer > 0) this.freezeTimer--;
 
-                // 5. Wall Collision logic
                 if (!wallOpen) {
                     let centerX = canvas.width / 2;
                     if (this.team === 'blue' && this.x > centerX - 10) {
-                        this.x = centerX - 10; // Blue gets stuck on the left side
+                        this.x = centerX - 10;
                         this.vx = 0;
                     } else if (this.team === 'red' && this.x < centerX + 10) {
-                        this.x = centerX + 10; // Red gets stuck on the right side
+                        this.x = centerX + 10;
                         this.vx = 0;
                     }
                 }
 
-                // Boundary bounce
                 if (this.x < 10) this.x = 10;
                 if (this.x > canvas.width - 10) this.x = canvas.width - 10;
                 if (this.y < 10) this.y = 10;
                 if (this.y > canvas.height - 10) this.y = canvas.height - 10;
 
-                // 6. Battle Logic
                 if (nearestEnemy) {
                     const dist = Math.hypot(this.x - nearestEnemy.x, this.y - nearestEnemy.y);
                     let reach = this.weapon === 'spear' ? 30 : 20;
                     
                     if (dist < reach && (wallOpen || Math.abs(this.x - nearestEnemy.x) > 20)) {
-                        // Calculate Damage
                         let dmg = 0.5;
                         if (this.hasFire) dmg = 2.0;
                         if (this.weapon === 'sword') dmg += 0.5;
                         if (this.weapon === 'spear') dmg += 0.3;
+                        if (this.hasLight) dmg += 1.0;
                         
-                        // Apply damage and Ice effects to the enemy
                         nearestEnemy.hp -= dmg;
+                        
                         if (this.hasIce) {
-                            nearestEnemy.hp -= 0.5; // Ice deals some extra damage
-                            nearestEnemy.freezeTimer = 60; // Freezes enemy for 60 frames
+                            nearestEnemy.hp -= 0.5; 
+                            nearestEnemy.freezeTimer = 60; 
+                        }
+                        if (this.hasLight) {
+                            nearestEnemy.blindTimer = 80;
                         }
                     }
                 }
             }
         }
 
-        // Mouse Controls
         canvas.addEventListener('mousedown', (e) => { isMouseDown = true; handleInput(e); });
         canvas.addEventListener('mouseup', () => { isMouseDown = false; });
         canvas.addEventListener('mousemove', (e) => {
@@ -238,8 +243,9 @@
                 people.forEach(p => {
                     const dist = Math.hypot(p.x - x, p.y - y);
                     if (dist < 60) {
-                        if (currentPower === 'fire') { p.hasFire = true; p.hasIce = false; }
-                        if (currentPower === 'ice') { p.hasIce = true; p.hasFire = false; }
+                        if (currentPower === 'fire') { p.hasFire = true; p.hasIce = false; p.hasLight = false; }
+                        if (currentPower === 'ice') { p.hasIce = true; p.hasFire = false; p.hasLight = false; }
+                        if (currentPower === 'light') { p.hasLight = true; p.hasFire = false; p.hasIce = false; }
                         if (currentPower === 'weapon') p.weapon = Math.random() > 0.5 ? 'sword' : 'spear';
                         if (currentPower === 'strike') p.hp = 0;
                         if (currentPower === 'wind') {
@@ -257,13 +263,11 @@
             ctx.fillStyle = '#2d5a27';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Draw Wall
             if (!wallOpen) {
                 ctx.fillStyle = '#555';
                 ctx.fillRect(canvas.width / 2 - 5, 0, 10, canvas.height);
             }
 
-            // Remove dead people
             people = people.filter(p => p.hp > 0);
             
             let b = 0, r = 0;

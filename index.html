@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>WebBox: Humanoids and Light</title>
+    <title>WebBox: Light Element</title>
     <style>
         body { margin: 0; display: flex; background: #1a1a1a; color: white; font-family: sans-serif; overflow: hidden; }
         #sidebar { width: 260px; background: #333; height: 100vh; padding: 15px; box-sizing: border-box; border-right: 3px solid #444; overflow-y: auto; }
@@ -23,7 +23,7 @@
 <body>
 
     <div id="sidebar">
-        <h2>WEBBOX PRO</h2>
+        <h2>WEBBOX</h2>
         <div class="stat-panel">
             Blue: <span id="count-blue">0</span> | Red: <span id="count-red">0</span><br>
             Tool: <span id="current-tool">Spawn Blue</span>
@@ -99,47 +99,52 @@
 
                 ctx.fillStyle = color;
 
-                // Draw Human Shape (Head and Body)
+                // Human Head
                 ctx.beginPath();
-                ctx.arc(this.x, this.y - 6, 4, 0, Math.PI * 2);
+                ctx.arc(this.x, this.y - 8, 4, 0, Math.PI * 2);
                 ctx.fill();
                 
-                ctx.beginPath();
-                ctx.rect(this.x - 3, this.y - 2, 6, 12);
-                ctx.fill();
+                // Human Body
+                ctx.fillRect(this.x - 3, this.y - 4, 6, 10);
+                
+                // Human Legs
+                ctx.fillRect(this.x - 3, this.y + 6, 2, 6);
+                ctx.fillRect(this.x + 1, this.y + 6, 2, 6);
 
-                // Yellow Border for Light Power
+                // Huge Yellow Border for Light Power
                 if (this.hasLight) {
                     ctx.strokeStyle = 'yellow';
-                    ctx.lineWidth = 2;
+                    ctx.lineWidth = 3;
                     ctx.beginPath();
-                    ctx.arc(this.x, this.y, 14, 0, Math.PI * 2);
+                    ctx.arc(this.x, this.y, 18, 0, Math.PI * 2);
                     ctx.stroke();
                 }
 
-                // Blinded indicator
+                // Blinded indicator black cloud
                 if (this.blindTimer > 0) {
                     ctx.fillStyle = 'black';
                     ctx.beginPath();
-                    ctx.arc(this.x, this.y - 7, 2, 0, Math.PI * 2);
+                    ctx.arc(this.x, this.y - 12, 4, 0, Math.PI * 2);
                     ctx.fill();
                 }
 
+                // Weapon
                 if (this.weapon) {
                     ctx.strokeStyle = '#ddd';
                     ctx.lineWidth = 2;
                     ctx.beginPath();
-                    let length = this.weapon === 'spear' ? 15 : 8;
+                    let length = this.weapon === 'spear' ? 18 : 10;
                     let angle = Math.atan2(this.vy, this.vx);
                     ctx.moveTo(this.x, this.y);
                     ctx.lineTo(this.x + Math.cos(angle) * length, this.y + Math.sin(angle) * length);
                     ctx.stroke();
                 }
                 
+                // HP
                 ctx.fillStyle = "white";
                 ctx.font = "10px Arial";
                 ctx.textAlign = "center";
-                ctx.fillText(Math.ceil(this.hp), this.x, this.y - 15);
+                ctx.fillText(Math.ceil(this.hp), this.x, this.y - 18);
             }
 
             update() {

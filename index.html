@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>WebBox: Light Element</title>
+    <title>WebBox V3</title>
     <style>
         body { margin: 0; display: flex; background: #1a1a1a; color: white; font-family: sans-serif; overflow: hidden; }
         #sidebar { width: 260px; background: #333; height: 100vh; padding: 15px; box-sizing: border-box; border-right: 3px solid #444; overflow-y: auto; }
@@ -23,7 +23,7 @@
 <body>
 
     <div id="sidebar">
-        <h2>WEBBOX</h2>
+        <h2>WEBBOX V3</h2>
         <div class="stat-panel">
             Blue: <span id="count-blue">0</span> | Red: <span id="count-red">0</span><br>
             Tool: <span id="current-tool">Spawn Blue</span>
@@ -52,7 +52,6 @@
         let people = [];
         let currentPower = 'spawn-blue';
         let wallOpen = false;
-        let isMouseDown = false;
 
         function resize() {
             canvas.width = window.innerWidth - 260;
@@ -83,6 +82,7 @@
                 this.hasFire = false;
                 this.hasIce = false;
                 this.hasLight = false;
+                this.hasWind = false;
                 this.weapon = null; 
                 
                 this.freezeTimer = 0; 
@@ -99,59 +99,82 @@
 
                 ctx.fillStyle = color;
 
-                // Human Head
                 ctx.beginPath();
-                ctx.arc(this.x, this.y - 8, 4, 0, Math.PI * 2);
+                ctx.arc(this.x, this.y - 8, 5, 0, Math.PI * 2);
                 ctx.fill();
                 
-                // Human Body
-                ctx.fillRect(this.x - 3, this.y - 4, 6, 10);
+                ctx.fillRect(this.x - 4, this.y - 3, 8, 12);
                 
-                // Human Legs
-                ctx.fillRect(this.x - 3, this.y + 6, 2, 6);
-                ctx.fillRect(this.x + 1, this.y + 6, 2, 6);
+                ctx.fillRect(this.x - 4, this.y + 9, 3, 7);
+                ctx.fillRect(this.x + 1, this.y + 9, 3, 7);
 
-                // Huge Yellow Border for Light Power
                 if (this.hasLight) {
                     ctx.strokeStyle = 'yellow';
                     ctx.lineWidth = 3;
                     ctx.beginPath();
-                    ctx.arc(this.x, this.y, 18, 0, Math.PI * 2);
+                    ctx.arc(this.x, this.y, 22, 0, Math.PI * 2);
                     ctx.stroke();
                 }
 
-                // Blinded indicator black cloud
+                if (this.hasFire) {
+                    ctx.strokeStyle = 'red';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, 20, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+
+                if (this.hasWind) {
+                    ctx.strokeStyle = 'white';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, 20, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+
                 if (this.blindTimer > 0) {
                     ctx.fillStyle = 'black';
                     ctx.beginPath();
-                    ctx.arc(this.x, this.y - 12, 4, 0, Math.PI * 2);
+                    ctx.arc(this.x, this.y - 14, 5, 0, Math.PI * 2);
                     ctx.fill();
                 }
 
-                // Weapon
                 if (this.weapon) {
                     ctx.strokeStyle = '#ddd';
-                    ctx.lineWidth = 2;
+                    ctx.lineWidth = 3;
                     ctx.beginPath();
-                    let length = this.weapon === 'spear' ? 18 : 10;
+                    let length = this.weapon === 'spear' ? 20 : 12;
                     let angle = Math.atan2(this.vy, this.vx);
                     ctx.moveTo(this.x, this.y);
                     ctx.lineTo(this.x + Math.cos(angle) * length, this.y + Math.sin(angle) * length);
                     ctx.stroke();
                 }
                 
-                // HP
                 ctx.fillStyle = "white";
-                ctx.font = "10px Arial";
+                ctx.font = "12px Arial";
                 ctx.textAlign = "center";
-                ctx.fillText(Math.ceil(this.hp), this.x, this.y - 18);
+                ctx.fillText(Math.ceil(this.hp), this.x, this.y - 24);
             }
 
             update() {
                 let nearestEnemy = null;
                 let minDist = Infinity;
 
-                // Blindness removes targeting
+                if (this.hasWind) {
+                    people.forEach(other => {
+                        if (other.team !== this.team) {
+                            let d = Math.hypot(this.x - other.x, this.y - other.y);
+                            if (d < 50) {
+                                let angle = Math.atan2(other.y - this.y, other.x - this.x);
+                                let force = (50 - d) * 0.1;
+                                other.vx += Math.cos(angle) * force;
+                                other.vy += Math.sin(angle) * force;
+                                other.hp -= 0.1; 
+                            }
+                        }
+                    });
+                }
+
                 if (this.blindTimer <= 0) {
                     people.forEach(other => {
                         if (other.team !== this.team) {
@@ -231,13 +254,7 @@
             }
         }
 
-        canvas.addEventListener('mousedown', (e) => { isMouseDown = true; handleInput(e); });
-        canvas.addEventListener('mouseup', () => { isMouseDown = false; });
-        canvas.addEventListener('mousemove', (e) => {
-            if(isMouseDown && currentPower === 'wind') handleInput(e);
-        });
-
-        function handleInput(e) {
+        canvas.addEventListener('mousedown', (e) => {
             const rect = canvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
@@ -248,21 +265,16 @@
                 people.forEach(p => {
                     const dist = Math.hypot(p.x - x, p.y - y);
                     if (dist < 60) {
-                        if (currentPower === 'fire') { p.hasFire = true; p.hasIce = false; p.hasLight = false; }
-                        if (currentPower === 'ice') { p.hasIce = true; p.hasFire = false; p.hasLight = false; }
-                        if (currentPower === 'light') { p.hasLight = true; p.hasFire = false; p.hasIce = false; }
+                        if (currentPower === 'fire') { p.hasFire = true; p.hasIce = false; p.hasLight = false; p.hasWind = false; }
+                        if (currentPower === 'ice') { p.hasIce = true; p.hasFire = false; p.hasLight = false; p.hasWind = false; }
+                        if (currentPower === 'light') { p.hasLight = true; p.hasFire = false; p.hasIce = false; p.hasWind = false; }
+                        if (currentPower === 'wind') { p.hasWind = true; p.hasFire = false; p.hasIce = false; p.hasLight = false; }
                         if (currentPower === 'weapon') p.weapon = Math.random() > 0.5 ? 'sword' : 'spear';
                         if (currentPower === 'strike') p.hp = 0;
-                        if (currentPower === 'wind') {
-                            let angle = Math.atan2(p.y - y, p.x - x);
-                            let force = (60 - dist) * 0.8;
-                            p.vx += Math.cos(angle) * force;
-                            p.vy += Math.sin(angle) * force;
-                        }
                     }
                 });
             }
-        }
+        });
 
         function animate() {
             ctx.fillStyle = '#2d5a27';
@@ -291,3 +303,4 @@
     </script>
 </body>
 </html>
+

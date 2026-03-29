@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>WebBox V7</title>
+    <title>WebBox V8</title>
     <style>
         body { margin: 0; display: flex; background: #1a1a1a; color: white; font-family: sans-serif; overflow: hidden; }
         #sidebar { width: 260px; background: #333; height: 100vh; padding: 15px; box-sizing: border-box; border-right: 3px solid #444; overflow-y: auto; }
@@ -21,7 +21,7 @@
 <body>
 
     <div id="sidebar">
-        <h2>WEBBOX V7</h2>
+        <h2>WEBBOX V8</h2>
         <div class="stat-panel">
             Blue: <span id="count-blue">0</span> | Red: <span id="count-red">0</span><br>
             Tool: <span id="current-tool">Spawn Normal</span>
@@ -94,15 +94,16 @@
         }
 
         class Projectile {
-            constructor(x, y, target, dmg, team) {
+            constructor(x, y, target, dmg, team, type) {
                 this.x = x;
                 this.y = y;
                 this.target = target;
                 this.dmg = dmg;
                 this.team = team;
+                this.type = type; 
                 let angle = Math.atan2(target.y - y, target.x - x);
-                this.vx = Math.cos(angle) * 8;
-                this.vy = Math.sin(angle) * 8;
+                this.vx = Math.cos(angle) * 12;
+                this.vy = Math.sin(angle) * 12;
                 this.active = true;
             }
             update() {
@@ -110,15 +111,26 @@
                 this.y += this.vy;
                 if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) this.active = false;
                 
-                if (this.target && this.target.hp > 0 && Math.hypot(this.x - this.target.x, this.y - this.target.y) < 20) {
+                if (this.target && this.target.hp > 0 && Math.hypot(this.x - this.target.x, this.y - this.target.y) < 25) {
                     this.target.hp -= this.dmg;
+                    this.target.flashTimer = 5;
+                    
+                    if (this.type === 'ice') {
+                        this.target.freezeTimer = 80;
+                    }
+                    if (this.type === 'fire') {
+                        this.target.hp -= 5; 
+                    }
+                    
+                    this.target.vx += this.vx * 0.5;
+                    this.target.vy += this.vy * 0.5;
                     this.active = false;
                 }
             }
             draw() {
-                ctx.fillStyle = 'white';
+                ctx.fillStyle = this.type === 'fire' ? 'orange' : (this.type === 'ice' ? 'cyan' : 'white');
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, 4, 0, Math.PI * 2);
+                ctx.arc(this.x, this.y, 6, 0, Math.PI * 2);
                 ctx.fill();
             }
         }
@@ -140,7 +152,10 @@
                 
                 this.freezeTimer = 0; 
                 this.blindTimer = 0;
+                this.flashTimer = 0;
                 this.cooldown = 0;
+                this.powerCooldown = 0;
+                this.dashTimer = 0;
                 this.ninjaOrbitDir = Math.random() > 0.5 ? 1 : -1;
 
                 this.vx = 0;
@@ -148,11 +163,15 @@
             }
 
             draw() {
-                let color = this.team === 'blue' ? '#3498db' : '#e74c3c';
-                if (this.hasFire) color = '#ff4500';
-                if (this.hasIce) color = '#a0e7ff'; 
-
-                ctx.fillStyle = color;
+                if (this.flashTimer > 0) {
+                    ctx.fillStyle = 'white';
+                    this.flashTimer--;
+                } else {
+                    let color = this.team === 'blue' ? '#3498db' : '#e74c3c';
+                    if (this.hasFire) color = '#ff4500';
+                    if (this.hasIce) color = '#a0e7ff'; 
+                    ctx.fillStyle = color;
+                }
 
                 ctx.beginPath();
                 ctx.arc(this.x, this.y - 16, 10, 0, Math.PI * 2);
@@ -193,7 +212,7 @@
                     ctx.arc(this.x, this.y, 44, 0, Math.PI * 2);
                     ctx.stroke();
                 }
-                if (this.hasFire) {
+                if (this.hasFire && this.flashTimer <= 0) {
                     ctx.strokeStyle = 'red';
                     ctx.lineWidth = 4;
                     ctx.beginPath();
@@ -234,6 +253,9 @@
 
             update() {
                 if (this.cooldown > 0) this.cooldown--;
+                if (this.powerCooldown > 0) this.powerCooldown--;
+                if (this.dashTimer > 0) this.dashTimer--;
+
                 let nearestEnemy = null;
                 let minDist = Infinity;
 
@@ -243,7 +265,7 @@
                             let d = Math.hypot(this.x - other.x, this.y - other.y);
                             if (d < 100) {
                                 let angle = Math.atan2(other.y - this.y, other.x - this.x);
-                                let force = (100 - d) * 0.05;
+                                let force = (100 - d) * 0.1;
                                 other.vx += Math.cos(angle) * force;
                                 other.vy += Math.sin(angle) * force;
                                 other.hp -= 0.1; 
@@ -281,15 +303,36 @@
                         if (nearestEnemy.hasWind) { this.hasWind = true; nearestEnemy.hasWind = false; stole = true; }
                         if (nearestEnemy.weapon) { this.weapon = nearestEnemy.weapon; nearestEnemy.weapon = null; stole = true; }
                         
-                        if (stole) this.cooldown = 100;
+                        if (stole) {
+                            this.cooldown = 100;
+                            nearestEnemy.flashTimer = 10;
+                            nearestEnemy.vx -= Math.cos(Math.atan2(nearestEnemy.y - this.y, nearestEnemy.x - this.x)) * 15;
+                            nearestEnemy.vy -= Math.sin(Math.atan2(nearestEnemy.y - this.y, nearestEnemy.x - this.x)) * 15;
+                        }
                     }
                 }
 
-                let speedLimit = 2.5;
+                let speedLimit = 3.0;
+                if (this.dashTimer > 0) speedLimit = 15.0; 
 
                 if (nearestEnemy) {
                     let angle = Math.atan2(nearestEnemy.y - this.y, nearestEnemy.x - this.x);
                     
+                    if ((this.hasFire || this.hasIce) && minDist < 300 && this.powerCooldown <= 0 && (wallOpen || Math.abs(this.x - nearestEnemy.x) > 30)) {
+                        let type = this.hasFire ? 'fire' : 'ice';
+                        projectiles.push(new Projectile(this.x, this.y, nearestEnemy, 10, this.team, type));
+                        this.powerCooldown = 60;
+                        this.vx -= Math.cos(angle) * 5; 
+                        this.vy -= Math.sin(angle) * 5;
+                    }
+
+                    if (this.role !== 'archer' && minDist < 150 && minDist > 50 && this.cooldown <= 0 && this.dashTimer <= 0) {
+                        this.dashTimer = 10;
+                        this.cooldown = 80;
+                        this.vx += Math.cos(angle) * 15;
+                        this.vy += Math.sin(angle) * 15;
+                    }
+
                     if (this.role === 'swapper' && this.cooldown <= 0 && minDist < 100) {
                         let possibleTargets = people.filter(p => p !== this);
                         if (possibleTargets.length > 0) {
@@ -304,48 +347,47 @@
                         }
                     }
                     else if (this.role === 'knight' && this.hp < 20) {
-                        this.vx -= Math.cos(angle) * 0.3; 
-                        this.vy -= Math.sin(angle) * 0.3;
-                        speedLimit = 3.5; 
+                        this.vx -= Math.cos(angle) * 0.4; 
+                        this.vy -= Math.sin(angle) * 0.4;
+                        speedLimit = 4.0; 
                     } 
                     else if (this.role === 'ninja') {
-                        speedLimit = 4.0;
+                        speedLimit = 5.0;
                         if (minDist < 60 && minDist > 30) {
                             let orbitAngle = angle + (Math.PI / 2) * this.ninjaOrbitDir;
-                            this.vx += Math.cos(orbitAngle) * 0.4;
-                            this.vy += Math.sin(orbitAngle) * 0.4;
+                            this.vx += Math.cos(orbitAngle) * 0.6;
+                            this.vy += Math.sin(orbitAngle) * 0.6;
                         } else {
-                            this.vx += Math.cos(angle) * 0.3;
-                            this.vy += Math.sin(angle) * 0.3;
+                            this.vx += Math.cos(angle) * 0.4;
+                            this.vy += Math.sin(angle) * 0.4;
                         }
                     }
                     else if (this.role === 'archer') {
-                        if (minDist < 250 && (wallOpen || Math.abs(this.x - nearestEnemy.x) > 30)) {
+                        if (minDist < 300 && (wallOpen || Math.abs(this.x - nearestEnemy.x) > 30)) {
                             if (this.cooldown <= 0) {
-                                let dmg = this.hasFire ? 15 : 5;
-                                projectiles.push(new Projectile(this.x, this.y, nearestEnemy, dmg, this.team));
-                                this.cooldown = 80;
+                                projectiles.push(new Projectile(this.x, this.y, nearestEnemy, 8, this.team, 'normal'));
+                                this.cooldown = 50;
                             }
-                            if (minDist < 100) {
-                                this.vx -= Math.cos(angle) * 0.2;
-                                this.vy -= Math.sin(angle) * 0.2;
+                            if (minDist < 120) {
+                                this.vx -= Math.cos(angle) * 0.3;
+                                this.vy -= Math.sin(angle) * 0.3;
                             }
                         } else {
-                            this.vx += Math.cos(angle) * 0.15;
-                            this.vy += Math.sin(angle) * 0.15;
+                            this.vx += Math.cos(angle) * 0.2;
+                            this.vy += Math.sin(angle) * 0.2;
                         }
                     }
-                    else {
-                        this.vx += Math.cos(angle) * 0.15; 
-                        this.vy += Math.sin(angle) * 0.15;
+                    else if (this.dashTimer <= 0) {
+                        this.vx += Math.cos(angle) * 0.2; 
+                        this.vy += Math.sin(angle) * 0.2;
                     }
                 } else {
                     this.vx += (Math.random() - 0.5) * 0.5;
                     this.vy += (Math.random() - 0.5) * 0.5;
                 }
 
-                this.vx *= 0.90;
-                this.vy *= 0.90;
+                this.vx *= 0.88;
+                this.vy *= 0.88;
 
                 if (this.freezeTimer > 0) speedLimit = 0.4; 
                 let speed = Math.hypot(this.vx, this.vy);
@@ -363,42 +405,50 @@
                     let centerX = canvas.width / 2;
                     if (this.team === 'blue' && this.x > centerX - 15) {
                         this.x = centerX - 15;
-                        this.vx = 0;
+                        this.vx *= -0.5;
                     } else if (this.team === 'red' && this.x < centerX + 15) {
                         this.x = centerX + 15;
-                        this.vx = 0;
+                        this.vx *= -0.5;
                     }
                 }
 
-                if (this.x < 15) this.x = 15;
-                if (this.x > canvas.width - 15) this.x = canvas.width - 15;
-                if (this.y < 15) this.y = 15;
-                if (this.y > canvas.height - 15) this.y = canvas.height - 15;
+                if (this.x < 15) { this.x = 15; this.vx *= -0.5; }
+                if (this.x > canvas.width - 15) { this.x = canvas.width - 15; this.vx *= -0.5; }
+                if (this.y < 15) { this.y = 15; this.vy *= -0.5; }
+                if (this.y > canvas.height - 15) { this.y = canvas.height - 15; this.vy *= -0.5; }
 
-                if (nearestEnemy && this.role !== 'archer') {
+                if (nearestEnemy && this.role !== 'archer' && this.dashTimer <= 0) {
                     const dist = Math.hypot(this.x - nearestEnemy.x, this.y - nearestEnemy.y);
                     let reach = this.weapon === 'spear' ? 60 : 40;
                     
                     if (dist < reach && (wallOpen || Math.abs(this.x - nearestEnemy.x) > 30)) {
-                        let dmg = 0.5;
-                        if (this.role === 'knight') dmg = 1.5;
-                        if (this.role === 'ninja') dmg = 1.2;
-                        if (this.hasFire) dmg *= 2.0;
-                        if (this.weapon === 'sword') dmg += 0.5;
-                        if (this.weapon === 'spear') dmg += 0.3;
-                        if (this.hasLight) dmg += 1.0;
+                        let dmg = 1.0;
+                        if (this.role === 'knight') dmg = 2.5;
+                        if (this.role === 'ninja') dmg = 1.5;
+                        if (this.hasFire) dmg *= 1.5;
+                        if (this.weapon === 'sword') dmg += 1.0;
+                        if (this.weapon === 'spear') dmg += 0.8;
+                        if (this.hasLight) dmg += 1.5;
                         
                         nearestEnemy.hp -= dmg;
+                        nearestEnemy.flashTimer = 5; 
+                        
+                        let knockbackForce = this.role === 'knight' ? 12 : 6;
+                        let angleToEnemy = Math.atan2(nearestEnemy.y - this.y, nearestEnemy.x - this.x);
+                        nearestEnemy.vx += Math.cos(angleToEnemy) * knockbackForce;
+                        nearestEnemy.vy += Math.sin(angleToEnemy) * knockbackForce;
+
+                        this.vx -= Math.cos(angleToEnemy) * 2;
+                        this.vy -= Math.sin(angleToEnemy) * 2;
                         
                         if (this.hasIce) {
-                            nearestEnemy.hp -= 0.5; 
                             nearestEnemy.freezeTimer = 60; 
                         }
                         if (this.hasLight) nearestEnemy.blindTimer = 80;
                         
                         if (this.role === 'ninja') {
-                            this.vx -= Math.cos(Math.atan2(nearestEnemy.y - this.y, nearestEnemy.x - this.x)) * 10;
-                            this.vy -= Math.sin(Math.atan2(nearestEnemy.y - this.y, nearestEnemy.x - this.x)) * 10;
+                            this.vx -= Math.cos(angleToEnemy) * 15;
+                            this.vy -= Math.sin(angleToEnemy) * 15;
                         }
                     }
                 }
@@ -422,7 +472,7 @@
                         if (currentPower === 'light') { p.hasLight = true; p.hasFire = false; p.hasIce = false; p.hasWind = false; }
                         if (currentPower === 'wind') { p.hasWind = true; p.hasFire = false; p.hasIce = false; p.hasLight = false; }
                         if (currentPower === 'weapon') p.weapon = Math.random() > 0.5 ? 'sword' : 'spear';
-                        if (currentPower === 'strike') p.hp = 0;
+                        if (currentPower === 'strike') { p.hp = 0; p.flashTimer = 10; }
                     }
                 });
             }
@@ -461,3 +511,4 @@
     </script>
 </body>
 </html>
+

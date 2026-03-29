@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>WebBox V6</title>
+    <title>WebBox V7</title>
     <style>
         body { margin: 0; display: flex; background: #1a1a1a; color: white; font-family: sans-serif; overflow: hidden; }
         #sidebar { width: 260px; background: #333; height: 100vh; padding: 15px; box-sizing: border-box; border-right: 3px solid #444; overflow-y: auto; }
@@ -21,7 +21,7 @@
 <body>
 
     <div id="sidebar">
-        <h2>WEBBOX V6</h2>
+        <h2>WEBBOX V7</h2>
         <div class="stat-panel">
             Blue: <span id="count-blue">0</span> | Red: <span id="count-red">0</span><br>
             Tool: <span id="current-tool">Spawn Normal</span>
@@ -34,6 +34,7 @@
         <button onclick="setPower('spawn-knight', this)">Spawn Knight</button>
         <button onclick="setPower('spawn-ninja', this)">Spawn Ninja</button>
         <button onclick="setPower('spawn-swapper', this)">Spawn Swapper</button>
+        <button onclick="setPower('spawn-shifter', this)">Spawn Shifter</button>
         <hr>
         <button onclick="setPower('weapon', this)">Give Weapon</button>
         <button onclick="setPower('fire', this)">Fire Power</button>
@@ -128,6 +129,7 @@
                 this.y = y;
                 this.team = team;
                 this.role = role; 
+                this.isShifter = (role === 'shifter');
                 this.hp = role === 'knight' ? 150 : (role === 'swapper' ? 120 : 100);
                 
                 this.hasFire = false;
@@ -177,6 +179,13 @@
                     ctx.fillRect(this.x - 9, this.y + 4, 18, 6);
                 }
 
+                if (this.isShifter) {
+                    ctx.fillStyle = '#00ffff';
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y - 32, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
                 if (this.hasLight) {
                     ctx.strokeStyle = 'yellow';
                     ctx.lineWidth = 4;
@@ -220,7 +229,7 @@
                 ctx.fillStyle = "white";
                 ctx.font = "16px Arial";
                 ctx.textAlign = "center";
-                ctx.fillText(Math.ceil(this.hp), this.x, this.y - 40);
+                ctx.fillText(Math.ceil(this.hp), this.x, this.y - 45);
             }
 
             update() {
@@ -255,6 +264,25 @@
                     });
                 } else {
                     this.blindTimer--;
+                }
+
+                if (this.isShifter && nearestEnemy && this.cooldown <= 0) {
+                    let d = Math.hypot(this.x - nearestEnemy.x, this.y - nearestEnemy.y);
+                    if (d < 60 && !nearestEnemy.isShifter) {
+                        let stole = false;
+                        if (nearestEnemy.role !== 'normal') {
+                            this.role = nearestEnemy.role;
+                            nearestEnemy.role = 'normal';
+                            stole = true;
+                        }
+                        if (nearestEnemy.hasFire) { this.hasFire = true; nearestEnemy.hasFire = false; stole = true; }
+                        if (nearestEnemy.hasIce) { this.hasIce = true; nearestEnemy.hasIce = false; stole = true; }
+                        if (nearestEnemy.hasLight) { this.hasLight = true; nearestEnemy.hasLight = false; stole = true; }
+                        if (nearestEnemy.hasWind) { this.hasWind = true; nearestEnemy.hasWind = false; stole = true; }
+                        if (nearestEnemy.weapon) { this.weapon = nearestEnemy.weapon; nearestEnemy.weapon = null; stole = true; }
+                        
+                        if (stole) this.cooldown = 100;
+                    }
                 }
 
                 let speedLimit = 2.5;

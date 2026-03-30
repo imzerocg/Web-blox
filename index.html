@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>WebBox V9</title>
+    <title>WebBox V10</title>
     <style>
         body { margin: 0; display: flex; background: #1a1a1a; color: white; font-family: sans-serif; overflow: hidden; }
         #sidebar { width: 260px; background: #333; height: 100vh; padding: 15px; box-sizing: border-box; border-right: 3px solid #444; overflow-y: auto; }
@@ -21,7 +21,7 @@
 <body>
 
     <div id="sidebar">
-        <h2>WEBBOX V9</h2>
+        <h2>WEBBOX V10</h2>
         <div class="stat-panel">
             Blue: <span id="count-blue">0</span> | Red: <span id="count-red">0</span><br>
             Tool: <span id="current-tool">Spawn Normal</span>
@@ -162,6 +162,9 @@
 
                 this.vx = 0;
                 this.vy = 0;
+                
+                // Civilization Mechanic
+                this.age = 0; 
             }
 
             draw() {
@@ -266,6 +269,40 @@
                 if (this.powerCooldown > 0) this.powerCooldown--;
                 if (this.dashTimer > 0) this.dashTimer--;
 
+                // CIVILIZATION LOGIC: Evolve and Reproduce when wall is closed
+                if (!wallOpen) {
+                    this.age++;
+                    
+                    // Reproduce every ~5 seconds
+                    if (this.age > 0 && this.age % 300 === 0 && Math.random() > 0.4) {
+                        let myTeamCount = people.filter(p => p.team === this.team).length;
+                        if (myTeamCount < 50) { // Limit to 50 per side to prevent lag
+                            people.push(new Person(this.x + (Math.random()*40-20), this.y + (Math.random()*40-20), this.team, 'normal'));
+                        }
+                    }
+
+                    // Evolve Weapon (3 seconds)
+                    if (this.age === 180 && !this.weapon && this.role !== 'elephant') {
+                        this.weapon = Math.random() > 0.5 ? 'sword' : 'spear';
+                    }
+
+                    // Evolve Class (8 seconds)
+                    if (this.age === 480 && this.role === 'normal') {
+                        let advancedRoles = ['archer', 'knight', 'ninja'];
+                        this.role = advancedRoles[Math.floor(Math.random() * advancedRoles.length)];
+                        if (this.role === 'knight') this.hp = 150;
+                    }
+
+                    // Evolve Elemental Power (14 seconds)
+                    if (this.age === 840) {
+                        let r = Math.random();
+                        if (r < 0.2) this.hasFire = true;
+                        else if (r < 0.4) this.hasIce = true;
+                        else if (r < 0.6) this.hasWind = true;
+                        else if (r < 0.8) this.hasLight = true;
+                    }
+                }
+
                 let nearestEnemy = null;
                 let minDist = Infinity;
 
@@ -287,10 +324,15 @@
                 if (this.blindTimer <= 0) {
                     people.forEach(other => {
                         if (other.team !== this.team) {
-                            let d = Math.hypot(this.x - other.x, this.y - other.y);
-                            if (d < minDist) {
-                                minDist = d;
-                                nearestEnemy = other;
+                            // Check if wall blocks sight
+                            let isBlockedByWall = !wallOpen && ((this.team === 'blue' && other.x > canvas.width / 2) || (this.team === 'red' && other.x < canvas.width / 2));
+                            
+                            if (!isBlockedByWall) {
+                                let d = Math.hypot(this.x - other.x, this.y - other.y);
+                                if (d < minDist) {
+                                    minDist = d;
+                                    nearestEnemy = other;
+                                }
                             }
                         }
                     });
@@ -531,4 +573,3 @@
     </script>
 </body>
 </html>
-

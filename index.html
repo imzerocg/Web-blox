@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>WebBox V12 - Ultimate Edition</title>
+    <title>WebBox V14 - Overpowered Edition</title>
     <style>
         body { margin: 0; display: flex; background: #111; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; user-select: none; }
         
@@ -39,20 +39,19 @@
 </head>
 <body>
 
-    <!-- START SCREEN -->
     <div id="start-screen">
         <div class="modal">
-            <h1>WebBox V12</h1>
-            <p>Welcome to the ultimate Anime God-Simulator. Build civilizations, grant devastating powers, and watch massive automated battles unfold.</p>
+            <h1>WebBox V14</h1>
+            <p>Welcome to the ultimate Anime God-Simulator. Build civilizations, mount cannons on elephants, and watch insanely overpowered battles unfold.</p>
             
             <div class="modal-grid">
                 <div>
                     <h3>⚔️ How to Play</h3>
                     <ul style="margin:0; padding-left:20px; color:#aaa; font-size:0.9em;">
                         <li>Select a Team (Blue/Red).</li>
-                        <li>Click the canvas to spawn units.</li>
-                        <li>Toggle the <b>Wall</b> to keep peace.</li>
-                        <li>Give elemental powers by clicking on units.</li>
+                        <li>Click canvas to spawn units.</li>
+                        <li>Give powers/weapons to units.</li>
+                        <li>Place cannons on ground or elephants.</li>
                         <li>Open the wall to start the war!</li>
                     </ul>
                 </div>
@@ -61,8 +60,8 @@
                     <ul style="margin:0; padding-left:20px; color:#aaa; font-size:0.9em;">
                         <li>If the wall is closed and Civ is ON...</li>
                         <li>Units build Houses to multiply.</li>
-                        <li>They build Armories to get weapons.</li>
-                        <li>They build Shrines to unlock magic.</li>
+                        <li>They build Armories for weapons.</li>
+                        <li>They build Shrines for magic.</li>
                         <li>Toggle OFF for a manual sandbox.</li>
                     </ul>
                 </div>
@@ -72,9 +71,8 @@
         </div>
     </div>
 
-    <!-- SIDEBAR -->
     <div id="sidebar">
-        <h2>WEBBOX V12</h2>
+        <h2>WEBBOX V14</h2>
         <div class="stat-panel">
             <div class="stat-row"><span>Blue Pop:</span> <span id="count-blue" class="blue-text">0</span></div>
             <div class="stat-row"><span>Red Pop:</span> <span id="count-red" class="red-text">0</span></div>
@@ -83,7 +81,7 @@
         
         <button id="teamToggle" onclick="toggleTeam()" class="team-blue-btn">Spawning: BLUE TEAM</button>
         <button class="civ-btn" onclick="toggleCiv()">Civilization: <span id="civ-status">ON</span></button>
-        <button class="wall-btn" id="wallBtn" onclick="toggleWall()">Wall: CLOSED</button>
+        <button class="wall-btn" id="wallBtn" onclick="toggleWall()">Wall: CLOSED (PEACE)</button>
         <hr>
         <button onclick="setPower('spawn-normal', this)" class="active">Spawn Normal</button>
         <button onclick="setPower('spawn-archer', this)">Spawn Archer</button>
@@ -94,6 +92,7 @@
         <button onclick="setPower('spawn-elephant', this)">Spawn Elephant</button>
         <hr>
         <button onclick="setPower('weapon', this)">🗡️ Give Weapon</button>
+        <button onclick="setPower('cannon', this)">🧨 Place Cannon</button>
         <button onclick="setPower('fire', this)">🔥 Fire Power</button>
         <button onclick="setPower('ice', this)">❄️ Ice Power</button>
         <button onclick="setPower('light', this)">✨ Light Power</button>
@@ -101,7 +100,6 @@
         <button onclick="setPower('strike', this)">⚡ Smite (Kill)</button>
     </div>
 
-    <!-- GAME CANVAS -->
     <canvas id="gameCanvas"></canvas>
 
     <script>
@@ -182,7 +180,6 @@
                 ctx.save();
                 ctx.translate(this.x, this.y);
                 
-                // Fake ground shadow
                 ctx.fillStyle = 'rgba(0,0,0,0.4)';
                 ctx.beginPath();
                 ctx.ellipse(0, 10, 25, 10, 0, 0, Math.PI*2);
@@ -233,8 +230,9 @@
                 this.team = team;
                 this.type = type; 
                 let angle = Math.atan2(target.y - y, target.x - x);
-                this.vx = Math.cos(angle) * 12;
-                this.vy = Math.sin(angle) * 12;
+                let speed = type === 'cannonball' ? 18 : 12;
+                this.vx = Math.cos(angle) * speed;
+                this.vy = Math.sin(angle) * speed;
                 this.active = true;
             }
             update() {
@@ -249,16 +247,20 @@
                     if (this.type === 'ice') this.target.freezeTimer = 80;
                     if (this.type === 'fire') this.target.hp -= 5; 
                     
-                    let pushResist = this.target.role === 'elephant' ? 0.1 : 0.5;
+                    let pushResist = this.target.role === 'elephant' ? 0.1 : (this.target.role === 'cannon' ? 0 : 0.5);
+                    if (this.type === 'cannonball') pushResist *= 4; 
+
                     this.target.vx += this.vx * pushResist;
                     this.target.vy += this.vy * pushResist;
                     this.active = false;
                 }
             }
             draw() {
-                ctx.fillStyle = this.type === 'fire' ? '#f39c12' : (this.type === 'ice' ? '#00ffff' : '#fff');
+                if (this.type === 'cannonball') ctx.fillStyle = '#222';
+                else ctx.fillStyle = this.type === 'fire' ? '#f39c12' : (this.type === 'ice' ? '#00ffff' : '#fff');
+                
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, 6, 0, Math.PI * 2);
+                ctx.arc(this.x, this.y, this.type === 'cannonball' ? 8 : 6, 0, Math.PI * 2);
                 ctx.fill();
             }
         }
@@ -270,13 +272,14 @@
                 this.team = team;
                 this.role = role; 
                 this.isShifter = (role === 'shifter');
-                this.hp = role === 'elephant' ? 500 : (role === 'knight' ? 150 : (role === 'swapper' ? 120 : 100));
+                this.hp = role === 'elephant' ? 500 : (role === 'knight' ? 150 : (role === 'swapper' ? 120 : (role === 'cannon' ? 1 : 100)));
                 this.maxHp = this.hp;
                 
                 this.hasFire = false;
                 this.hasIce = false;
                 this.hasLight = false;
                 this.hasWind = false;
+                this.hasCannon = false;
                 this.weapon = null; 
                 
                 this.freezeTimer = 0; 
@@ -286,7 +289,8 @@
                 this.powerCooldown = 0;
                 this.dashTimer = 0;
                 this.ninjaOrbitDir = Math.random() > 0.5 ? 1 : -1;
-                this.wanderAngle = Math.random() * Math.PI * 2; // Smooth wandering
+                this.wanderAngle = Math.random() * Math.PI * 2; 
+                this.aimAngle = 0;
 
                 this.vx = 0;
                 this.vy = 0;
@@ -299,8 +303,7 @@
             }
 
             draw() {
-                // Performance boost: Fake ground shadow instead of ctx.shadowBlur
-                let baseSize = this.role === 'elephant' ? 30 : 12;
+                let baseSize = this.role === 'elephant' ? 30 : (this.role === 'cannon' ? 15 : 12);
                 ctx.fillStyle = 'rgba(0,0,0,0.3)';
                 ctx.beginPath();
                 ctx.ellipse(this.x, this.y + baseSize, baseSize, baseSize/2, 0, 0, Math.PI*2);
@@ -322,78 +325,67 @@
                     ctx.fillRect(this.x + (25 * dir), this.y - 10, 15 * dir, 30);
                     ctx.fillStyle = 'white';
                     ctx.fillRect(this.x + (25 * dir), this.y, 12 * dir, 4);
-                } else {
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y - 16, 10, 0, Math.PI * 2);
-                    ctx.fill();
+
+                    if (this.hasCannon) {
+                        ctx.strokeStyle = '#111'; ctx.lineWidth = 8; ctx.beginPath();
+                        ctx.moveTo(this.x, this.y - 25);
+                        ctx.lineTo(this.x + Math.cos(this.aimAngle)*30, this.y - 25 + Math.sin(this.aimAngle)*30);
+                        ctx.stroke();
+                        ctx.fillStyle = '#333'; ctx.beginPath(); ctx.arc(this.x, this.y - 25, 10, 0, Math.PI*2); ctx.fill();
+                    }
+                } 
+                else if (this.role === 'cannon') {
+                    ctx.fillStyle = '#333'; ctx.beginPath(); ctx.arc(this.x, this.y, 12, 0, Math.PI*2); ctx.fill();
+                    ctx.strokeStyle = '#111'; ctx.lineWidth = 8; ctx.beginPath();
+                    ctx.moveTo(this.x, this.y);
+                    ctx.lineTo(this.x + Math.cos(this.aimAngle)*22, this.y + Math.sin(this.aimAngle)*22);
+                    ctx.stroke();
+                    ctx.fillStyle = this.team === 'blue' ? '#3498db' : '#e74c3c'; ctx.beginPath(); ctx.arc(this.x, this.y, 6, 0, Math.PI*2); ctx.fill();
+                }
+                else {
+                    ctx.beginPath(); ctx.arc(this.x, this.y - 16, 10, 0, Math.PI * 2); ctx.fill();
                     ctx.fillRect(this.x - 8, this.y - 6, 16, 24);
                     ctx.fillRect(this.x - 8, this.y + 18, 6, 14);
                     ctx.fillRect(this.x + 2, this.y + 18, 6, 14);
 
                     if (this.role === 'knight') {
-                        ctx.fillStyle = '#7f8c8d';
-                        ctx.fillRect(this.x - 10, this.y - 6, 20, 24); 
+                        ctx.fillStyle = '#7f8c8d'; ctx.fillRect(this.x - 10, this.y - 6, 20, 24); 
                     } else if (this.role === 'ninja') {
-                        ctx.fillStyle = '#222';
-                        ctx.fillRect(this.x - 8, this.y - 18, 16, 6); 
+                        ctx.fillStyle = '#222'; ctx.fillRect(this.x - 8, this.y - 18, 16, 6); 
                     } else if (this.role === 'archer') {
-                        ctx.fillStyle = '#2ecc71';
-                        ctx.beginPath();
-                        ctx.arc(this.x, this.y - 22, 6, 0, Math.PI); 
-                        ctx.fill();
+                        ctx.fillStyle = '#2ecc71'; ctx.beginPath(); ctx.arc(this.x, this.y - 22, 6, 0, Math.PI); ctx.fill();
                     } else if (this.role === 'swapper') {
-                        ctx.fillStyle = '#9b59b6';
-                        ctx.fillRect(this.x - 9, this.y + 4, 18, 6);
+                        ctx.fillStyle = '#9b59b6'; ctx.fillRect(this.x - 9, this.y + 4, 18, 6);
                     }
                 }
 
                 if (this.isShifter) {
-                    ctx.fillStyle = '#00ffff';
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y - 32, 5, 0, Math.PI * 2);
-                    ctx.fill();
+                    ctx.fillStyle = '#00ffff'; ctx.beginPath(); ctx.arc(this.x, this.y - 32, 5, 0, Math.PI * 2); ctx.fill();
                 }
 
-                let auraSize = this.role === 'elephant' ? 60 : 40;
-                ctx.lineWidth = 3;
-                
-                if (this.hasLight) {
-                    ctx.strokeStyle = '#f1c40f';
-                    ctx.beginPath(); ctx.arc(this.x, this.y, auraSize + 4, 0, Math.PI * 2); ctx.stroke();
-                }
-                if (this.hasFire && this.flashTimer <= 0) {
-                    ctx.strokeStyle = '#e74c3c';
-                    ctx.beginPath(); ctx.arc(this.x, this.y, auraSize, 0, Math.PI * 2); ctx.stroke();
-                }
-                if (this.hasWind) {
-                    ctx.strokeStyle = 'rgba(255,255,255,0.8)';
-                    ctx.beginPath(); ctx.arc(this.x, this.y, auraSize, 0, Math.PI * 2); ctx.stroke();
+                let auraSize = this.role === 'elephant' ? 60 : (this.role === 'cannon' ? 0 : 40);
+                if (auraSize > 0) {
+                    ctx.lineWidth = 3;
+                    if (this.hasLight) { ctx.strokeStyle = '#f1c40f'; ctx.beginPath(); ctx.arc(this.x, this.y, auraSize + 4, 0, Math.PI * 2); ctx.stroke(); }
+                    if (this.hasFire && this.flashTimer <= 0) { ctx.strokeStyle = '#e74c3c'; ctx.beginPath(); ctx.arc(this.x, this.y, auraSize, 0, Math.PI * 2); ctx.stroke(); }
+                    if (this.hasWind) { ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.beginPath(); ctx.arc(this.x, this.y, auraSize, 0, Math.PI * 2); ctx.stroke(); }
                 }
 
                 if (this.blindTimer > 0) {
-                    ctx.fillStyle = '#111';
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y - (this.role === 'elephant' ? 40 : 28), 10, 0, Math.PI * 2);
-                    ctx.fill();
+                    ctx.fillStyle = '#111'; ctx.beginPath(); ctx.arc(this.x, this.y - (this.role === 'elephant' ? 40 : 28), 10, 0, Math.PI * 2); ctx.fill();
                 }
 
-                if (this.weapon && this.role !== 'elephant') {
-                    ctx.strokeStyle = '#ecf0f1';
-                    ctx.lineWidth = 4;
-                    ctx.beginPath();
-                    let length = this.weapon === 'spear' ? 40 : 24;
-                    let angle = Math.atan2(this.vy, this.vx);
-                    ctx.moveTo(this.x, this.y);
-                    ctx.lineTo(this.x + Math.cos(angle) * length, this.y + Math.sin(angle) * length);
-                    ctx.stroke();
+                if (this.weapon && this.role !== 'elephant' && this.role !== 'cannon') {
+                    ctx.strokeStyle = '#ecf0f1'; ctx.lineWidth = 4; ctx.beginPath();
+                    let length = this.weapon === 'spear' ? 40 : 24; let angle = Math.atan2(this.vy, this.vx);
+                    ctx.moveTo(this.x, this.y); ctx.lineTo(this.x + Math.cos(angle) * length, this.y + Math.sin(angle) * length); ctx.stroke();
                 }
                 
-                // Health Bar (Cleaner than numbers)
-                let hpBarY = this.y - (this.role === 'elephant' ? 55 : 45);
-                ctx.fillStyle = 'rgba(0,0,0,0.5)';
-                ctx.fillRect(this.x - 15, hpBarY, 30, 4);
-                ctx.fillStyle = this.hp > (this.maxHp*0.4) ? '#2ecc71' : '#e74c3c';
-                ctx.fillRect(this.x - 15, hpBarY, (this.hp/this.maxHp)*30, 4);
+                if (this.role !== 'cannon') {
+                    let hpBarY = this.y - (this.role === 'elephant' ? 55 : 45);
+                    ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(this.x - 15, hpBarY, 30, 4);
+                    ctx.fillStyle = this.hp > (this.maxHp*0.4) ? '#2ecc71' : '#e74c3c'; ctx.fillRect(this.x - 15, hpBarY, (this.hp/this.maxHp)*30, 4);
+                }
             }
 
             update() {
@@ -401,22 +393,19 @@
                 if (this.powerCooldown > 0) this.powerCooldown--;
                 if (this.dashTimer > 0) this.dashTimer--;
 
-                // Optimization: Pre-calculate my team population
                 let myTeamPop = people.filter(p => p.team === this.team).length;
 
                 // CIVILIZATION LOGIC
-                if (!wallOpen && civEnabled) {
+                if (!wallOpen && civEnabled && this.role !== 'cannon') {
                     this.age++;
                     
                     if (!this.task) {
                         if (this.age > 100 && this.age % 300 === 0 && this.role !== 'elephant' && myTeamPop < 50) {
                             this.task = 'house';
                         } else if (this.age > 180 && !this.weapon && this.role !== 'elephant' && !this.checkedWeapon) {
-                            this.task = 'stonebox';
-                            this.checkedWeapon = true; 
+                            this.task = 'stonebox'; this.checkedWeapon = true; 
                         } else if (this.age > 600 && !(this.hasFire||this.hasIce||this.hasWind||this.hasLight) && !this.checkedPower) {
-                            this.task = 'shrine';
-                            this.checkedPower = true;
+                            this.task = 'shrine'; this.checkedPower = true;
                         } else if (this.age === 480 && this.role === 'normal') {
                             let advancedRoles = ['archer', 'knight', 'ninja'];
                             this.role = advancedRoles[Math.floor(Math.random() * advancedRoles.length)];
@@ -425,12 +414,11 @@
                     }
 
                     if (this.task) {
-                        let targetBuilding = null;
-                        let bMinDist = Infinity;
+                        let targetBuilding = null; let bMinDist = Infinity;
                         buildings.forEach(b => {
                             if (b.team === this.team && b.type === this.task) {
                                 let dx = this.x - b.x; let dy = this.y - b.y;
-                                if(Math.abs(dx) > 300 || Math.abs(dy) > 300) return; // Optimization early exit
+                                if(Math.abs(dx) > 300 || Math.abs(dy) > 300) return; 
                                 let d = Math.hypot(dx, dy);
                                 if (d < bMinDist) { bMinDist = d; targetBuilding = b; }
                             }
@@ -442,46 +430,37 @@
                             let d = Math.hypot(this.x - targetBuilding.x, this.y - targetBuilding.y);
                             if (d > 30) {
                                 let angle = Math.atan2(targetBuilding.y - this.y, targetBuilding.x - this.x);
-                                this.vx += Math.cos(angle) * 0.4;
-                                this.vy += Math.sin(angle) * 0.4;
+                                this.vx += Math.cos(angle) * 0.4; this.vy += Math.sin(angle) * 0.4;
                             } else {
-                                this.vx *= 0.5;
-                                this.vy *= 0.5;
-                                this.taskTimer++;
-
+                                this.vx *= 0.5; this.vy *= 0.5; this.taskTimer++;
                                 if (this.task === 'stonebox') this.x += Math.sin(this.taskTimer * 0.8) * 2.0; 
                                 if (this.task === 'shrine') this.y += Math.sin(this.taskTimer * 0.3) * 1.5; 
 
                                 if (this.taskTimer > 80) {
-                                    if (this.task === 'house') {
-                                        if (myTeamPop < 50) people.push(new Person(this.x + 15, this.y + 15, this.team, 'normal'));
-                                    } else if (this.task === 'stonebox') {
-                                        this.weapon = Math.random() > 0.5 ? 'sword' : 'spear';
-                                    } else if (this.task === 'shrine') {
+                                    if (this.task === 'house' && myTeamPop < 50) people.push(new Person(this.x + 15, this.y + 15, this.team, 'normal'));
+                                    else if (this.task === 'stonebox') this.weapon = Math.random() > 0.5 ? 'sword' : 'spear';
+                                    else if (this.task === 'shrine') {
                                         let r = Math.random();
                                         if (r < 0.25) this.hasFire = true;
                                         else if (r < 0.5) this.hasIce = true;
                                         else if (r < 0.75) this.hasWind = true;
                                         else this.hasLight = true;
                                     }
-                                    this.task = null;
-                                    this.taskTimer = 0;
+                                    this.task = null; this.taskTimer = 0;
                                 }
                             }
                         }
-                    } else {
-                        // Smooth idle wandering
+                    } else if (this.role !== 'cannon') {
                         this.wanderAngle += (Math.random() - 0.5) * 0.4;
                         let wanderSpd = this.role === 'elephant' ? 0.15 : 0.3;
-                        this.vx += Math.cos(this.wanderAngle) * wanderSpd;
-                        this.vy += Math.sin(this.wanderAngle) * wanderSpd;
+                        this.vx += Math.cos(this.wanderAngle) * wanderSpd; this.vy += Math.sin(this.wanderAngle) * wanderSpd;
                     }
                 }
 
                 let nearestEnemy = null;
                 let minDist = Infinity;
 
-                if (this.hasWind) {
+                if (this.hasWind && this.role !== 'cannon') {
                     people.forEach(other => {
                         if (other.team !== this.team) {
                             let dx = this.x - other.x; let dy = this.y - other.y;
@@ -490,8 +469,7 @@
                                 if (d < 100) {
                                     let angle = Math.atan2(other.y - this.y, other.x - this.x);
                                     let force = (100 - d) * 0.1;
-                                    other.vx += Math.cos(angle) * force;
-                                    other.vy += Math.sin(angle) * force;
+                                    other.vx += Math.cos(angle) * force; other.vy += Math.sin(angle) * force;
                                     other.hp -= 0.1; 
                                 }
                             }
@@ -500,15 +478,14 @@
                 }
 
                 if (wallOpen || !civEnabled) {
-                    this.task = null; 
-                    this.taskTimer = 0;
+                    this.task = null; this.taskTimer = 0;
                     if (this.blindTimer <= 0) {
                         people.forEach(other => {
                             if (other.team !== this.team) {
                                 let isBlockedByWall = !wallOpen && ((this.team === 'blue' && other.x > canvas.width / 2) || (this.team === 'red' && other.x < canvas.width / 2));
                                 if (!isBlockedByWall) {
                                     let dx = this.x - other.x; let dy = this.y - other.y;
-                                    if(Math.abs(dx) > 400 || Math.abs(dy) > 400) return; // Optimization
+                                    if(Math.abs(dx) > 600 || Math.abs(dy) > 600) return; 
                                     let d = Math.hypot(dx, dy);
                                     if (d < minDist) { minDist = d; nearestEnemy = other; }
                                 }
@@ -519,14 +496,25 @@
                     }
                 }
 
-                // Combat AI
-                let speedLimit = this.role === 'elephant' ? 1.5 : 3.0;
+                // AI LOGIC
+                let speedLimit = this.role === 'cannon' ? 0.5 : (this.role === 'elephant' ? 1.5 : 3.0);
                 if (this.dashTimer > 0) speedLimit = 15.0; 
 
                 if (nearestEnemy) {
                     let angle = Math.atan2(nearestEnemy.y - this.y, nearestEnemy.x - this.x);
+                    this.aimAngle = angle;
                     
-                    if (this.isShifter && this.cooldown <= 0 && minDist < 60 && !nearestEnemy.isShifter) {
+                    // Cannon Fire Logic
+                    if ((this.role === 'cannon' || this.hasCannon) && minDist < 500 && this.powerCooldown <= 0 && (wallOpen || Math.abs(this.x - nearestEnemy.x) > 30)) {
+                        projectiles.push(new Projectile(this.x, this.y - (this.role==='elephant'?30:0), nearestEnemy, 75, this.team, 'cannonball'));
+                        this.powerCooldown = 150; 
+                        let recoil = this.role === 'elephant' ? 2 : 5;
+                        this.vx -= Math.cos(angle) * recoil;
+                        this.vy -= Math.sin(angle) * recoil;
+                    }
+
+                    // OP SHIFTER BUFF - Instant Steal, huge range, zero cooldown
+                    if (this.isShifter && this.cooldown <= 0 && minDist < 150 && !nearestEnemy.isShifter && nearestEnemy.role !== 'cannon') {
                         let stole = false;
                         if (nearestEnemy.role !== 'normal') { this.role = nearestEnemy.role; nearestEnemy.role = 'normal'; stole = true; }
                         if (nearestEnemy.hasFire) { this.hasFire = true; nearestEnemy.hasFire = false; stole = true; }
@@ -536,34 +524,44 @@
                         if (nearestEnemy.weapon) { this.weapon = nearestEnemy.weapon; nearestEnemy.weapon = null; stole = true; }
                         
                         if (stole) {
-                            this.cooldown = 100;
+                            this.cooldown = 10; // Instantly ready to steal again!
                             nearestEnemy.flashTimer = 10;
-                            nearestEnemy.vx -= Math.cos(angle) * 15;
-                            nearestEnemy.vy -= Math.sin(angle) * 15;
+                            nearestEnemy.vx -= Math.cos(angle) * 15; nearestEnemy.vy -= Math.sin(angle) * 15;
                         }
                     }
                     
+                    // Elemental Projectiles
                     if ((this.hasFire || this.hasIce) && minDist < 300 && this.powerCooldown <= 0 && (wallOpen || Math.abs(this.x - nearestEnemy.x) > 30)) {
                         let type = this.hasFire ? 'fire' : 'ice';
                         projectiles.push(new Projectile(this.x, this.y, nearestEnemy, 10, this.team, type));
                         this.powerCooldown = 60;
-                        this.vx -= Math.cos(angle) * 5; 
-                        this.vy -= Math.sin(angle) * 5;
+                        this.vx -= Math.cos(angle) * 5; this.vy -= Math.sin(angle) * 5;
                     }
 
-                    if (this.role !== 'archer' && this.role !== 'elephant' && minDist < 150 && minDist > 50 && this.cooldown <= 0 && this.dashTimer <= 0) {
+                    // Dash
+                    if (this.role !== 'archer' && this.role !== 'elephant' && this.role !== 'cannon' && minDist < 150 && minDist > 50 && this.cooldown <= 0 && this.dashTimer <= 0) {
                         this.dashTimer = 10; this.cooldown = 80;
                         this.vx += Math.cos(angle) * 15; this.vy += Math.sin(angle) * 15;
                     }
 
-                    if (this.role === 'swapper' && this.cooldown <= 0 && minDist < 100) {
-                        let possibleTargets = people.filter(p => p !== this);
+                    // OP SWAPPER BUFF - Instant Hit & Swap Combo (Boogie Woogie)
+                    if (this.role === 'swapper' && this.cooldown <= 0 && minDist < 150) {
+                        let possibleTargets = people.filter(p => p !== this && p.role !== 'cannon');
                         if (possibleTargets.length > 0) {
+                            // Instant Damage before swap
+                            nearestEnemy.hp -= 10;
+                            nearestEnemy.flashTimer = 5;
+                            nearestEnemy.vx += Math.cos(angle) * 10;
+                            nearestEnemy.vy += Math.sin(angle) * 10;
+
+                            // The Swap
                             let target = possibleTargets[Math.floor(Math.random() * possibleTargets.length)];
                             let tempX = this.x; let tempY = this.y;
                             this.x = target.x; this.y = target.y;
                             target.x = tempX; target.y = tempY;
-                            this.cooldown = 120; 
+                            
+                            this.cooldown = 20; // Almost zero cooldown, unstoppable!
+                            this.dashTimer = 0;
                         }
                     }
                     else if (this.role === 'knight' && this.hp < 30) {
@@ -589,32 +587,25 @@
                             this.vx += Math.cos(angle) * 0.2; this.vy += Math.sin(angle) * 0.2;
                         }
                     }
-                    else if (this.dashTimer <= 0) {
+                    else if (this.dashTimer <= 0 && this.role !== 'cannon') {
                         let accel = this.role === 'elephant' ? 0.08 : 0.2;
                         this.vx += Math.cos(angle) * accel; this.vy += Math.sin(angle) * accel;
                     }
-                } else if (wallOpen) {
+                } else if (wallOpen && this.role !== 'cannon') {
                     this.wanderAngle += (Math.random() - 0.5) * 0.4;
                     let wanderSpd = this.role === 'elephant' ? 0.15 : 0.3;
-                    this.vx += Math.cos(this.wanderAngle) * wanderSpd;
-                    this.vy += Math.sin(this.wanderAngle) * wanderSpd;
+                    this.vx += Math.cos(this.wanderAngle) * wanderSpd; this.vy += Math.sin(this.wanderAngle) * wanderSpd;
                 }
 
-                // Physics & Friction
-                this.vx *= 0.88;
-                this.vy *= 0.88;
+                // Physics & Boundary limits
+                this.vx *= 0.88; this.vy *= 0.88;
                 if (this.freezeTimer > 0) speedLimit = 0.4; 
                 let speed = Math.hypot(this.vx, this.vy);
-                if (speed > speedLimit) {
-                    this.vx = (this.vx / speed) * speedLimit;
-                    this.vy = (this.vy / speed) * speedLimit;
-                }
+                if (speed > speedLimit) { this.vx = (this.vx / speed) * speedLimit; this.vy = (this.vy / speed) * speedLimit; }
 
-                this.x += this.vx;
-                this.y += this.vy;
+                this.x += this.vx; this.y += this.vy;
                 if (this.freezeTimer > 0) this.freezeTimer--;
 
-                // Map Boundaries & Wall Collision
                 if (!wallOpen) {
                     let centerX = canvas.width / 2;
                     let rad = this.role === 'elephant' ? 25 : 15;
@@ -629,7 +620,7 @@
                 if (this.y > canvas.height - rad) { this.y = canvas.height - rad; this.vy *= -0.5; }
 
                 // Melee Damage Calculation
-                if (nearestEnemy && this.role !== 'archer' && this.dashTimer <= 0 && this.cooldown <= 0) {
+                if (nearestEnemy && this.role !== 'archer' && this.role !== 'cannon' && this.dashTimer <= 0 && this.cooldown <= 0) {
                     const dist = Math.hypot(this.x - nearestEnemy.x, this.y - nearestEnemy.y);
                     let reach = this.role === 'elephant' ? 70 : (this.weapon === 'spear' ? 60 : 40);
                     
@@ -645,24 +636,22 @@
                         
                         nearestEnemy.hp -= dmg;
                         nearestEnemy.flashTimer = 5; 
-                        this.cooldown = this.role === 'elephant' ? 40 : 15;
+                        this.cooldown = this.role === 'elephant' ? 40 : 25;
                         
                         let knockbackForce = this.role === 'elephant' ? 25 : (this.role === 'knight' ? 12 : 6);
-                        let pushResist = nearestEnemy.role === 'elephant' ? 0.2 : 1;
+                        let pushResist = nearestEnemy.role === 'elephant' ? 0.2 : (nearestEnemy.role === 'cannon' ? 0 : 1);
                         let angleToEnemy = Math.atan2(nearestEnemy.y - this.y, nearestEnemy.x - this.x);
                         nearestEnemy.vx += Math.cos(angleToEnemy) * (knockbackForce * pushResist);
                         nearestEnemy.vy += Math.sin(angleToEnemy) * (knockbackForce * pushResist);
 
                         if (this.role !== 'elephant') {
-                            this.vx -= Math.cos(angleToEnemy) * 2;
-                            this.vy -= Math.sin(angleToEnemy) * 2;
+                            this.vx -= Math.cos(angleToEnemy) * 2; this.vy -= Math.sin(angleToEnemy) * 2;
                         }
                         
                         if (this.hasIce) nearestEnemy.freezeTimer = 60; 
                         if (this.hasLight) nearestEnemy.blindTimer = 80;
                         if (this.role === 'ninja') {
-                            this.vx -= Math.cos(angleToEnemy) * 15;
-                            this.vy -= Math.sin(angleToEnemy) * 15;
+                            this.vx -= Math.cos(angleToEnemy) * 15; this.vy -= Math.sin(angleToEnemy) * 15;
                         }
                     }
                 }
@@ -675,9 +664,22 @@
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
 
-            if (currentPower.startsWith('spawn-')) {
+            if (currentPower === 'cannon') {
+                let placedOnElephant = false;
+                people.forEach(p => {
+                    if (p.role === 'elephant' && p.team === currentTeam && Math.hypot(p.x - x, p.y - y) < 60 && !p.hasCannon) {
+                        p.hasCannon = true;
+                        placedOnElephant = true;
+                    }
+                });
+                if (!placedOnElephant) {
+                    if (people.filter(p => p.team === currentTeam).length < 150) {
+                        people.push(new Person(x, y, currentTeam, 'cannon'));
+                    }
+                }
+            } else if (currentPower.startsWith('spawn-')) {
                 let teamCount = people.filter(p => p.team === currentTeam).length;
-                if (teamCount >= 150) return; // Hard spawn limit of 150
+                if (teamCount >= 150) return; 
                 
                 let role = currentPower.split('-')[1];
                 people.push(new Person(x, y, currentTeam, role));
@@ -690,16 +692,15 @@
                         if (currentPower === 'ice') { p.hasIce = true; p.hasFire = false; p.hasLight = false; p.hasWind = false; }
                         if (currentPower === 'light') { p.hasLight = true; p.hasFire = false; p.hasIce = false; p.hasWind = false; }
                         if (currentPower === 'wind') { p.hasWind = true; p.hasFire = false; p.hasIce = false; p.hasLight = false; }
-                        if (currentPower === 'weapon' && p.role !== 'elephant') p.weapon = Math.random() > 0.5 ? 'sword' : 'spear';
+                        if (currentPower === 'weapon' && p.role !== 'elephant' && p.role !== 'cannon') p.weapon = Math.random() > 0.5 ? 'sword' : 'spear';
                         if (currentPower === 'strike') { p.hp = 0; p.flashTimer = 10; }
                     }
                 });
             }
         });
 
-        // Background Grid Pattern
         function drawBackground() {
-            ctx.fillStyle = '#2d5a27'; // Base grass
+            ctx.fillStyle = '#2d5a27'; 
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
             ctx.strokeStyle = 'rgba(0,0,0,0.1)';

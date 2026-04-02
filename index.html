@@ -2,32 +2,88 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>WebBox</title>
+    <title>WebBox V12 - Ultimate Edition</title>
     <style>
-        body { margin: 0; display: flex; background: #1a1a1a; color: white; font-family: sans-serif; overflow: hidden; }
-        #sidebar { width: 260px; background: #333; height: 100vh; padding: 15px; box-sizing: border-box; border-right: 3px solid #444; overflow-y: auto; }
-        #gameCanvas { background: #2d5a27; flex-grow: 1; cursor: crosshair; }
-        button { width: 100%; padding: 10px; margin-bottom: 8px; cursor: pointer; background: #444; color: white; border: 1px solid #666; border-radius: 4px; }
-        button:hover { background: #555; }
-        button.active { background: #e67e22; border-color: #fff; }
-        .wall-btn { background: #27ae60; margin-top: 10px; }
-        .team-blue-btn { background: #3498db; }
-        .team-red-btn { background: #e74c3c; }
-        .stat-panel { background: #222; padding: 10px; border-radius: 5px; margin-bottom: 10px; font-size: 0.85em; }
-        h2 { margin: 0 0 10px 0; color: #f1c40f; text-align: center; }
-        hr { border: 0; border-top: 1px solid #555; margin: 10px 0; }
+        body { margin: 0; display: flex; background: #111; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; user-select: none; }
+        
+        /* Start Screen Modal */
+        #start-screen { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(5px); z-index: 100; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        .modal { background: linear-gradient(145deg, #222, #111); padding: 40px; border-radius: 12px; border: 2px solid #444; box-shadow: 0 10px 30px rgba(0,0,0,0.8); max-width: 600px; }
+        .modal h1 { color: #f1c40f; margin-top: 0; font-size: 2.5em; text-transform: uppercase; letter-spacing: 2px; }
+        .modal p { color: #ccc; line-height: 1.6; margin-bottom: 20px; font-size: 1.1em; }
+        .modal h3 { color: #3498db; margin-bottom: 5px; }
+        .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; text-align: left; background: #1a1a1a; padding: 20px; border-radius: 8px; margin-bottom: 25px; }
+        .play-btn { background: #27ae60; color: white; border: none; padding: 15px 40px; font-size: 1.5em; font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4); }
+        .play-btn:hover { background: #2ecc71; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(39, 174, 96, 0.6); }
+
+        /* Game UI */
+        #sidebar { width: 280px; background: linear-gradient(to bottom, #2a2a2a, #1a1a1a); height: 100vh; padding: 15px; box-sizing: border-box; border-right: 3px solid #444; overflow-y: auto; z-index: 10; box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
+        #gameCanvas { flex-grow: 1; cursor: crosshair; }
+        
+        button { width: 100%; padding: 12px; margin-bottom: 8px; cursor: pointer; background: #333; color: white; border: 1px solid #555; border-radius: 6px; font-weight: bold; transition: 0.1s; }
+        button:hover { background: #444; }
+        button.active { background: #e67e22; border-color: #f1c40f; box-shadow: 0 0 10px rgba(230, 126, 34, 0.5); }
+        .wall-btn { background: #c0392b; margin-top: 10px; }
+        .civ-btn { background: #8e44ad; }
+        .team-blue-btn { background: #2980b9; border-color: #3498db; }
+        .team-red-btn { background: #c0392b; border-color: #e74c3c; }
+        
+        .stat-panel { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 0.9em; border: 1px solid #444; }
+        .stat-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
+        .stat-row span { font-weight: bold; }
+        .blue-text { color: #3498db; }
+        .red-text { color: #e74c3c; }
+        h2 { margin: 0 0 10px 0; color: #f1c40f; text-align: center; letter-spacing: 1px; }
+        hr { border: 0; border-top: 1px solid #444; margin: 15px 0; }
     </style>
 </head>
 <body>
 
+    <!-- START SCREEN -->
+    <div id="start-screen">
+        <div class="modal">
+            <h1>WebBox V12</h1>
+            <p>Welcome to the ultimate Anime God-Simulator. Build civilizations, grant devastating powers, and watch massive automated battles unfold.</p>
+            
+            <div class="modal-grid">
+                <div>
+                    <h3>⚔️ How to Play</h3>
+                    <ul style="margin:0; padding-left:20px; color:#aaa; font-size:0.9em;">
+                        <li>Select a Team (Blue/Red).</li>
+                        <li>Click the canvas to spawn units.</li>
+                        <li>Toggle the <b>Wall</b> to keep peace.</li>
+                        <li>Give elemental powers by clicking on units.</li>
+                        <li>Open the wall to start the war!</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>🏰 Civilization Mode</h3>
+                    <ul style="margin:0; padding-left:20px; color:#aaa; font-size:0.9em;">
+                        <li>If the wall is closed and Civ is ON...</li>
+                        <li>Units build Houses to multiply.</li>
+                        <li>They build Armories to get weapons.</li>
+                        <li>They build Shrines to unlock magic.</li>
+                        <li>Toggle OFF for a manual sandbox.</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <button class="play-btn" onclick="startGame()">ENTER WORLD</button>
+        </div>
+    </div>
+
+    <!-- SIDEBAR -->
     <div id="sidebar">
-        <h2>WEBBOX V11</h2>
+        <h2>WEBBOX V12</h2>
         <div class="stat-panel">
-            Blue: <span id="count-blue">0</span> | Red: <span id="count-red">0</span><br>
-            Tool: <span id="current-tool">Spawn Normal</span>
+            <div class="stat-row"><span>Blue Pop:</span> <span id="count-blue" class="blue-text">0</span></div>
+            <div class="stat-row"><span>Red Pop:</span> <span id="count-red" class="red-text">0</span></div>
+            <div class="stat-row" style="margin-top: 5px; color:#aaa;">Tool: <span id="current-tool" style="color:#fff;">Spawn Normal</span></div>
         </div>
         
-        <button id="teamToggle" onclick="toggleTeam()" class="team-blue-btn">Current Team: BLUE</button>
+        <button id="teamToggle" onclick="toggleTeam()" class="team-blue-btn">Spawning: BLUE TEAM</button>
+        <button class="civ-btn" onclick="toggleCiv()">Civilization: <span id="civ-status">ON</span></button>
+        <button class="wall-btn" id="wallBtn" onclick="toggleWall()">Wall: CLOSED</button>
         <hr>
         <button onclick="setPower('spawn-normal', this)" class="active">Spawn Normal</button>
         <button onclick="setPower('spawn-archer', this)">Spawn Archer</button>
@@ -37,16 +93,15 @@
         <button onclick="setPower('spawn-shifter', this)">Spawn Shifter</button>
         <button onclick="setPower('spawn-elephant', this)">Spawn Elephant</button>
         <hr>
-        <button onclick="setPower('weapon', this)">Give Weapon</button>
-        <button onclick="setPower('fire', this)">Fire Power</button>
-        <button onclick="setPower('ice', this)">Ice Power</button>
-        <button onclick="setPower('light', this)">Light Power</button>
-        <button onclick="setPower('wind', this)">Wind Power</button>
-        <button onclick="setPower('strike', this)">Lightning</button>
-        <hr>
-        <button class="wall-btn" onclick="toggleWall()">Toggle Wall: <span id="wall-status">CLOSED</span></button>
+        <button onclick="setPower('weapon', this)">🗡️ Give Weapon</button>
+        <button onclick="setPower('fire', this)">🔥 Fire Power</button>
+        <button onclick="setPower('ice', this)">❄️ Ice Power</button>
+        <button onclick="setPower('light', this)">✨ Light Power</button>
+        <button onclick="setPower('wind', this)">🌪️ Wind Power</button>
+        <button onclick="setPower('strike', this)">⚡ Smite (Kill)</button>
     </div>
 
+    <!-- GAME CANVAS -->
     <canvas id="gameCanvas"></canvas>
 
     <script>
@@ -56,43 +111,63 @@
 
         let people = [];
         let projectiles = [];
-        let buildings = []; // New array for Civilization structures
+        let buildings = []; 
         let currentPower = 'spawn-normal';
         let currentTeam = 'blue';
         let wallOpen = false;
+        let civEnabled = true;
+        let gameRunning = false;
 
         function resize() {
-            canvas.width = window.innerWidth - 260;
+            canvas.width = window.innerWidth - 280;
             canvas.height = window.innerHeight;
         }
         window.addEventListener('resize', resize);
         resize();
+
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            gameRunning = true;
+            animate();
+        }
 
         function toggleTeam() {
             let btn = document.getElementById('teamToggle');
             if (currentTeam === 'blue') {
                 currentTeam = 'red';
                 btn.className = 'team-red-btn';
-                btn.innerText = 'Current Team: RED';
+                btn.innerText = 'Spawning: RED TEAM';
             } else {
                 currentTeam = 'blue';
                 btn.className = 'team-blue-btn';
-                btn.innerText = 'Current Team: BLUE';
+                btn.innerText = 'Spawning: BLUE TEAM';
             }
+        }
+
+        function toggleCiv() {
+            civEnabled = !civEnabled;
+            document.getElementById('civ-status').innerText = civEnabled ? "ON" : "OFF";
         }
 
         function setPower(power, btn) {
             currentPower = power;
-            toolDisplay.innerText = power.replace('spawn-', '').toUpperCase();
-            document.querySelectorAll('button').forEach(b => {
-                if(b.id !== 'teamToggle' && !b.classList.contains('wall-btn')) b.classList.remove('active');
+            let displayTxt = power.replace('spawn-', '').toUpperCase();
+            if(power === 'strike') displayTxt = 'SMITE';
+            toolDisplay.innerText = displayTxt;
+            
+            document.querySelectorAll('#sidebar button').forEach(b => {
+                if(b.id !== 'teamToggle' && b.id !== 'wallBtn' && !b.classList.contains('civ-btn')) {
+                    b.classList.remove('active');
+                }
             });
             btn.classList.add('active');
         }
 
         function toggleWall() {
             wallOpen = !wallOpen;
-            document.getElementById('wall-status').innerText = wallOpen ? "OPEN" : "CLOSED";
+            let btn = document.getElementById('wallBtn');
+            btn.innerText = wallOpen ? "Wall: OPEN (WAR)" : "Wall: CLOSED (PEACE)";
+            btn.style.background = wallOpen ? "#e67e22" : "#c0392b";
         }
 
         class Building {
@@ -100,12 +175,19 @@
                 this.x = x;
                 this.y = y;
                 this.team = team;
-                this.type = type; // 'house', 'stonebox', 'shrine'
+                this.type = type; 
             }
 
             draw() {
                 ctx.save();
                 ctx.translate(this.x, this.y);
+                
+                // Fake ground shadow
+                ctx.fillStyle = 'rgba(0,0,0,0.4)';
+                ctx.beginPath();
+                ctx.ellipse(0, 10, 25, 10, 0, 0, Math.PI*2);
+                ctx.fill();
+
                 ctx.strokeStyle = this.team === 'blue' ? '#3498db' : '#e74c3c';
                 ctx.lineWidth = 2;
 
@@ -136,13 +218,8 @@
                     ctx.beginPath();
                     ctx.arc(0, -25, 8, 0, Math.PI * 2);
                     ctx.fill();
-                    ctx.shadowBlur = 10;
-                    ctx.shadowColor = '#00FFFF';
-                    ctx.fill();
-                    ctx.shadowBlur = 0; 
                     ctx.strokeRect(-12, -5, 24, 15);
                 }
-                
                 ctx.restore();
             }
         }
@@ -179,7 +256,7 @@
                 }
             }
             draw() {
-                ctx.fillStyle = this.type === 'fire' ? 'orange' : (this.type === 'ice' ? 'cyan' : 'white');
+                ctx.fillStyle = this.type === 'fire' ? '#f39c12' : (this.type === 'ice' ? '#00ffff' : '#fff');
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, 6, 0, Math.PI * 2);
                 ctx.fill();
@@ -194,6 +271,7 @@
                 this.role = role; 
                 this.isShifter = (role === 'shifter');
                 this.hp = role === 'elephant' ? 500 : (role === 'knight' ? 150 : (role === 'swapper' ? 120 : 100));
+                this.maxHp = this.hp;
                 
                 this.hasFire = false;
                 this.hasIce = false;
@@ -208,11 +286,11 @@
                 this.powerCooldown = 0;
                 this.dashTimer = 0;
                 this.ninjaOrbitDir = Math.random() > 0.5 ? 1 : -1;
+                this.wanderAngle = Math.random() * Math.PI * 2; // Smooth wandering
 
                 this.vx = 0;
                 this.vy = 0;
                 
-                // Civilization Properties
                 this.age = 0; 
                 this.task = null;
                 this.taskTimer = 0;
@@ -221,6 +299,13 @@
             }
 
             draw() {
+                // Performance boost: Fake ground shadow instead of ctx.shadowBlur
+                let baseSize = this.role === 'elephant' ? 30 : 12;
+                ctx.fillStyle = 'rgba(0,0,0,0.3)';
+                ctx.beginPath();
+                ctx.ellipse(this.x, this.y + baseSize, baseSize, baseSize/2, 0, 0, Math.PI*2);
+                ctx.fill();
+
                 if (this.flashTimer > 0) {
                     ctx.fillStyle = 'white';
                     this.flashTimer--;
@@ -246,10 +331,10 @@
                     ctx.fillRect(this.x + 2, this.y + 18, 6, 14);
 
                     if (this.role === 'knight') {
-                        ctx.fillStyle = 'gray';
+                        ctx.fillStyle = '#7f8c8d';
                         ctx.fillRect(this.x - 10, this.y - 6, 20, 24); 
                     } else if (this.role === 'ninja') {
-                        ctx.fillStyle = 'black';
+                        ctx.fillStyle = '#222';
                         ctx.fillRect(this.x - 8, this.y - 18, 16, 6); 
                     } else if (this.role === 'archer') {
                         ctx.fillStyle = '#2ecc71';
@@ -270,38 +355,30 @@
                 }
 
                 let auraSize = this.role === 'elephant' ? 60 : 40;
+                ctx.lineWidth = 3;
                 
                 if (this.hasLight) {
-                    ctx.strokeStyle = 'yellow';
-                    ctx.lineWidth = 4;
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y, auraSize + 4, 0, Math.PI * 2);
-                    ctx.stroke();
+                    ctx.strokeStyle = '#f1c40f';
+                    ctx.beginPath(); ctx.arc(this.x, this.y, auraSize + 4, 0, Math.PI * 2); ctx.stroke();
                 }
                 if (this.hasFire && this.flashTimer <= 0) {
-                    ctx.strokeStyle = 'red';
-                    ctx.lineWidth = 4;
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y, auraSize, 0, Math.PI * 2);
-                    ctx.stroke();
+                    ctx.strokeStyle = '#e74c3c';
+                    ctx.beginPath(); ctx.arc(this.x, this.y, auraSize, 0, Math.PI * 2); ctx.stroke();
                 }
                 if (this.hasWind) {
-                    ctx.strokeStyle = 'white';
-                    ctx.lineWidth = 4;
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y, auraSize, 0, Math.PI * 2);
-                    ctx.stroke();
+                    ctx.strokeStyle = 'rgba(255,255,255,0.8)';
+                    ctx.beginPath(); ctx.arc(this.x, this.y, auraSize, 0, Math.PI * 2); ctx.stroke();
                 }
 
                 if (this.blindTimer > 0) {
-                    ctx.fillStyle = 'black';
+                    ctx.fillStyle = '#111';
                     ctx.beginPath();
                     ctx.arc(this.x, this.y - (this.role === 'elephant' ? 40 : 28), 10, 0, Math.PI * 2);
                     ctx.fill();
                 }
 
                 if (this.weapon && this.role !== 'elephant') {
-                    ctx.strokeStyle = '#ddd';
+                    ctx.strokeStyle = '#ecf0f1';
                     ctx.lineWidth = 4;
                     ctx.beginPath();
                     let length = this.weapon === 'spear' ? 40 : 24;
@@ -311,10 +388,12 @@
                     ctx.stroke();
                 }
                 
-                ctx.fillStyle = "white";
-                ctx.font = "16px Arial";
-                ctx.textAlign = "center";
-                ctx.fillText(Math.ceil(this.hp), this.x, this.y - (this.role === 'elephant' ? 55 : 45));
+                // Health Bar (Cleaner than numbers)
+                let hpBarY = this.y - (this.role === 'elephant' ? 55 : 45);
+                ctx.fillStyle = 'rgba(0,0,0,0.5)';
+                ctx.fillRect(this.x - 15, hpBarY, 30, 4);
+                ctx.fillStyle = this.hp > (this.maxHp*0.4) ? '#2ecc71' : '#e74c3c';
+                ctx.fillRect(this.x - 15, hpBarY, (this.hp/this.maxHp)*30, 4);
             }
 
             update() {
@@ -322,57 +401,26 @@
                 if (this.powerCooldown > 0) this.powerCooldown--;
                 if (this.dashTimer > 0) this.dashTimer--;
 
-                let nearestEnemy = null;
-                let minDist = Infinity;
+                // Optimization: Pre-calculate my team population
+                let myTeamPop = people.filter(p => p.team === this.team).length;
 
-                if (this.hasWind) {
-                    people.forEach(other => {
-                        if (other.team !== this.team) {
-                            let d = Math.hypot(this.x - other.x, this.y - other.y);
-                            if (d < 100) {
-                                let angle = Math.atan2(other.y - this.y, other.x - this.x);
-                                let force = (100 - d) * 0.1;
-                                other.vx += Math.cos(angle) * force;
-                                other.vy += Math.sin(angle) * force;
-                                other.hp -= 0.1; 
-                            }
-                        }
-                    });
-                }
-
-                // AI Targeting OR Civilization Tasks
-                if (wallOpen) {
-                    this.task = null; // Drop tools of peace when war begins
-                    this.taskTimer = 0;
-                    
-                    if (this.blindTimer <= 0) {
-                        people.forEach(other => {
-                            if (other.team !== this.team) {
-                                let d = Math.hypot(this.x - other.x, this.y - other.y);
-                                if (d < minDist) { minDist = d; nearestEnemy = other; }
-                            }
-                        });
-                    } else {
-                        this.blindTimer--;
-                    }
-                } else {
-                    // --- CIVILIZATION PEACE TIME LOGIC ---
+                // CIVILIZATION LOGIC
+                if (!wallOpen && civEnabled) {
                     this.age++;
                     
                     if (!this.task) {
-                        let myTeamPop = people.filter(p => p.team === this.team).length;
                         if (this.age > 100 && this.age % 300 === 0 && this.role !== 'elephant' && myTeamPop < 50) {
                             this.task = 'house';
                         } else if (this.age > 180 && !this.weapon && this.role !== 'elephant' && !this.checkedWeapon) {
                             this.task = 'stonebox';
                             this.checkedWeapon = true; 
-                        } else if (this.age > 840 && !(this.hasFire||this.hasIce||this.hasWind||this.hasLight) && !this.checkedPower) {
+                        } else if (this.age > 600 && !(this.hasFire||this.hasIce||this.hasWind||this.hasLight) && !this.checkedPower) {
                             this.task = 'shrine';
                             this.checkedPower = true;
                         } else if (this.age === 480 && this.role === 'normal') {
                             let advancedRoles = ['archer', 'knight', 'ninja'];
                             this.role = advancedRoles[Math.floor(Math.random() * advancedRoles.length)];
-                            if (this.role === 'knight') this.hp = 150;
+                            if (this.role === 'knight') { this.maxHp = 150; this.hp = 150; }
                         }
                     }
 
@@ -381,7 +429,9 @@
                         let bMinDist = Infinity;
                         buildings.forEach(b => {
                             if (b.team === this.team && b.type === this.task) {
-                                let d = Math.hypot(this.x - b.x, this.y - b.y);
+                                let dx = this.x - b.x; let dy = this.y - b.y;
+                                if(Math.abs(dx) > 300 || Math.abs(dy) > 300) return; // Optimization early exit
+                                let d = Math.hypot(dx, dy);
                                 if (d < bMinDist) { bMinDist = d; targetBuilding = b; }
                             }
                         });
@@ -390,24 +440,21 @@
                             buildings.push(new Building(this.x, this.y, this.team, this.task));
                         } else {
                             let d = Math.hypot(this.x - targetBuilding.x, this.y - targetBuilding.y);
-                            if (d > 25) {
+                            if (d > 30) {
                                 let angle = Math.atan2(targetBuilding.y - this.y, targetBuilding.x - this.x);
-                                this.vx += Math.cos(angle) * 0.3;
-                                this.vy += Math.sin(angle) * 0.3;
+                                this.vx += Math.cos(angle) * 0.4;
+                                this.vy += Math.sin(angle) * 0.4;
                             } else {
                                 this.vx *= 0.5;
                                 this.vy *= 0.5;
                                 this.taskTimer++;
 
-                                // Visual Animations for interacting with buildings
-                                if (this.task === 'stonebox') this.x += Math.sin(this.taskTimer * 0.5) * 1.5; // Rubbing hands
-                                if (this.task === 'shrine') this.y += Math.sin(this.taskTimer * 0.2) * 1.0; // Praying/Floating
+                                if (this.task === 'stonebox') this.x += Math.sin(this.taskTimer * 0.8) * 2.0; 
+                                if (this.task === 'shrine') this.y += Math.sin(this.taskTimer * 0.3) * 1.5; 
 
                                 if (this.taskTimer > 80) {
                                     if (this.task === 'house') {
-                                        if (people.filter(p => p.team === this.team).length < 50) {
-                                            people.push(new Person(this.x + 15, this.y + 15, this.team, 'normal'));
-                                        }
+                                        if (myTeamPop < 50) people.push(new Person(this.x + 15, this.y + 15, this.team, 'normal'));
                                     } else if (this.task === 'stonebox') {
                                         this.weapon = Math.random() > 0.5 ? 'sword' : 'spear';
                                     } else if (this.task === 'shrine') {
@@ -423,22 +470,65 @@
                             }
                         }
                     } else {
-                        let wander = this.role === 'elephant' ? 0.2 : 0.5;
-                        this.vx += (Math.random() - 0.5) * wander;
-                        this.vy += (Math.random() - 0.5) * wander;
+                        // Smooth idle wandering
+                        this.wanderAngle += (Math.random() - 0.5) * 0.4;
+                        let wanderSpd = this.role === 'elephant' ? 0.15 : 0.3;
+                        this.vx += Math.cos(this.wanderAngle) * wanderSpd;
+                        this.vy += Math.sin(this.wanderAngle) * wanderSpd;
                     }
                 }
 
-                // Shifter class logic
-                if (this.isShifter && nearestEnemy && this.cooldown <= 0) {
-                    let d = Math.hypot(this.x - nearestEnemy.x, this.y - nearestEnemy.y);
-                    if (d < 60 && !nearestEnemy.isShifter) {
-                        let stole = false;
-                        if (nearestEnemy.role !== 'normal') {
-                            this.role = nearestEnemy.role;
-                            nearestEnemy.role = 'normal';
-                            stole = true;
+                let nearestEnemy = null;
+                let minDist = Infinity;
+
+                if (this.hasWind) {
+                    people.forEach(other => {
+                        if (other.team !== this.team) {
+                            let dx = this.x - other.x; let dy = this.y - other.y;
+                            if (Math.abs(dx) < 100 && Math.abs(dy) < 100) {
+                                let d = Math.hypot(dx, dy);
+                                if (d < 100) {
+                                    let angle = Math.atan2(other.y - this.y, other.x - this.x);
+                                    let force = (100 - d) * 0.1;
+                                    other.vx += Math.cos(angle) * force;
+                                    other.vy += Math.sin(angle) * force;
+                                    other.hp -= 0.1; 
+                                }
+                            }
                         }
+                    });
+                }
+
+                if (wallOpen || !civEnabled) {
+                    this.task = null; 
+                    this.taskTimer = 0;
+                    if (this.blindTimer <= 0) {
+                        people.forEach(other => {
+                            if (other.team !== this.team) {
+                                let isBlockedByWall = !wallOpen && ((this.team === 'blue' && other.x > canvas.width / 2) || (this.team === 'red' && other.x < canvas.width / 2));
+                                if (!isBlockedByWall) {
+                                    let dx = this.x - other.x; let dy = this.y - other.y;
+                                    if(Math.abs(dx) > 400 || Math.abs(dy) > 400) return; // Optimization
+                                    let d = Math.hypot(dx, dy);
+                                    if (d < minDist) { minDist = d; nearestEnemy = other; }
+                                }
+                            }
+                        });
+                    } else {
+                        this.blindTimer--;
+                    }
+                }
+
+                // Combat AI
+                let speedLimit = this.role === 'elephant' ? 1.5 : 3.0;
+                if (this.dashTimer > 0) speedLimit = 15.0; 
+
+                if (nearestEnemy) {
+                    let angle = Math.atan2(nearestEnemy.y - this.y, nearestEnemy.x - this.x);
+                    
+                    if (this.isShifter && this.cooldown <= 0 && minDist < 60 && !nearestEnemy.isShifter) {
+                        let stole = false;
+                        if (nearestEnemy.role !== 'normal') { this.role = nearestEnemy.role; nearestEnemy.role = 'normal'; stole = true; }
                         if (nearestEnemy.hasFire) { this.hasFire = true; nearestEnemy.hasFire = false; stole = true; }
                         if (nearestEnemy.hasIce) { this.hasIce = true; nearestEnemy.hasIce = false; stole = true; }
                         if (nearestEnemy.hasLight) { this.hasLight = true; nearestEnemy.hasLight = false; stole = true; }
@@ -448,17 +538,10 @@
                         if (stole) {
                             this.cooldown = 100;
                             nearestEnemy.flashTimer = 10;
-                            nearestEnemy.vx -= Math.cos(Math.atan2(nearestEnemy.y - this.y, nearestEnemy.x - this.x)) * 15;
-                            nearestEnemy.vy -= Math.sin(Math.atan2(nearestEnemy.y - this.y, nearestEnemy.x - this.x)) * 15;
+                            nearestEnemy.vx -= Math.cos(angle) * 15;
+                            nearestEnemy.vy -= Math.sin(angle) * 15;
                         }
                     }
-                }
-
-                let speedLimit = this.role === 'elephant' ? 1.5 : 3.0;
-                if (this.dashTimer > 0) speedLimit = 15.0; 
-
-                if (nearestEnemy) {
-                    let angle = Math.atan2(nearestEnemy.y - this.y, nearestEnemy.x - this.x);
                     
                     if ((this.hasFire || this.hasIce) && minDist < 300 && this.powerCooldown <= 0 && (wallOpen || Math.abs(this.x - nearestEnemy.x) > 30)) {
                         let type = this.hasFire ? 'fire' : 'ice';
@@ -469,39 +552,30 @@
                     }
 
                     if (this.role !== 'archer' && this.role !== 'elephant' && minDist < 150 && minDist > 50 && this.cooldown <= 0 && this.dashTimer <= 0) {
-                        this.dashTimer = 10;
-                        this.cooldown = 80;
-                        this.vx += Math.cos(angle) * 15;
-                        this.vy += Math.sin(angle) * 15;
+                        this.dashTimer = 10; this.cooldown = 80;
+                        this.vx += Math.cos(angle) * 15; this.vy += Math.sin(angle) * 15;
                     }
 
                     if (this.role === 'swapper' && this.cooldown <= 0 && minDist < 100) {
                         let possibleTargets = people.filter(p => p !== this);
                         if (possibleTargets.length > 0) {
                             let target = possibleTargets[Math.floor(Math.random() * possibleTargets.length)];
-                            let tempX = this.x;
-                            let tempY = this.y;
-                            this.x = target.x;
-                            this.y = target.y;
-                            target.x = tempX;
-                            target.y = tempY;
+                            let tempX = this.x; let tempY = this.y;
+                            this.x = target.x; this.y = target.y;
+                            target.x = tempX; target.y = tempY;
                             this.cooldown = 120; 
                         }
                     }
-                    else if (this.role === 'knight' && this.hp < 20) {
-                        this.vx -= Math.cos(angle) * 0.4; 
-                        this.vy -= Math.sin(angle) * 0.4;
-                        speedLimit = 4.0; 
+                    else if (this.role === 'knight' && this.hp < 30) {
+                        this.vx -= Math.cos(angle) * 0.4; this.vy -= Math.sin(angle) * 0.4; speedLimit = 4.0; 
                     } 
                     else if (this.role === 'ninja') {
                         speedLimit = 5.0;
                         if (minDist < 60 && minDist > 30) {
                             let orbitAngle = angle + (Math.PI / 2) * this.ninjaOrbitDir;
-                            this.vx += Math.cos(orbitAngle) * 0.6;
-                            this.vy += Math.sin(orbitAngle) * 0.6;
+                            this.vx += Math.cos(orbitAngle) * 0.6; this.vy += Math.sin(orbitAngle) * 0.6;
                         } else {
-                            this.vx += Math.cos(angle) * 0.4;
-                            this.vy += Math.sin(angle) * 0.4;
+                            this.vx += Math.cos(angle) * 0.4; this.vy += Math.sin(angle) * 0.4;
                         }
                     }
                     else if (this.role === 'archer') {
@@ -510,29 +584,25 @@
                                 projectiles.push(new Projectile(this.x, this.y, nearestEnemy, 8, this.team, 'normal'));
                                 this.cooldown = 50;
                             }
-                            if (minDist < 120) {
-                                this.vx -= Math.cos(angle) * 0.3;
-                                this.vy -= Math.sin(angle) * 0.3;
-                            }
+                            if (minDist < 120) { this.vx -= Math.cos(angle) * 0.3; this.vy -= Math.sin(angle) * 0.3; }
                         } else {
-                            this.vx += Math.cos(angle) * 0.2;
-                            this.vy += Math.sin(angle) * 0.2;
+                            this.vx += Math.cos(angle) * 0.2; this.vy += Math.sin(angle) * 0.2;
                         }
                     }
                     else if (this.dashTimer <= 0) {
                         let accel = this.role === 'elephant' ? 0.08 : 0.2;
-                        this.vx += Math.cos(angle) * accel; 
-                        this.vy += Math.sin(angle) * accel;
+                        this.vx += Math.cos(angle) * accel; this.vy += Math.sin(angle) * accel;
                     }
                 } else if (wallOpen) {
-                    let wander = this.role === 'elephant' ? 0.2 : 0.5;
-                    this.vx += (Math.random() - 0.5) * wander;
-                    this.vy += (Math.random() - 0.5) * wander;
+                    this.wanderAngle += (Math.random() - 0.5) * 0.4;
+                    let wanderSpd = this.role === 'elephant' ? 0.15 : 0.3;
+                    this.vx += Math.cos(this.wanderAngle) * wanderSpd;
+                    this.vy += Math.sin(this.wanderAngle) * wanderSpd;
                 }
 
+                // Physics & Friction
                 this.vx *= 0.88;
                 this.vy *= 0.88;
-
                 if (this.freezeTimer > 0) speedLimit = 0.4; 
                 let speed = Math.hypot(this.vx, this.vy);
                 if (speed > speedLimit) {
@@ -542,20 +612,14 @@
 
                 this.x += this.vx;
                 this.y += this.vy;
-                
                 if (this.freezeTimer > 0) this.freezeTimer--;
 
-                // Wall Collision 
+                // Map Boundaries & Wall Collision
                 if (!wallOpen) {
                     let centerX = canvas.width / 2;
                     let rad = this.role === 'elephant' ? 25 : 15;
-                    if (this.team === 'blue' && this.x > centerX - rad) {
-                        this.x = centerX - rad;
-                        this.vx *= -0.5;
-                    } else if (this.team === 'red' && this.x < centerX + rad) {
-                        this.x = centerX + rad;
-                        this.vx *= -0.5;
-                    }
+                    if (this.team === 'blue' && this.x > centerX - rad) { this.x = centerX - rad; this.vx *= -0.5; } 
+                    else if (this.team === 'red' && this.x < centerX + rad) { this.x = centerX + rad; this.vx *= -0.5; }
                 }
 
                 let rad = this.role === 'elephant' ? 25 : 15;
@@ -564,6 +628,7 @@
                 if (this.y < rad) { this.y = rad; this.vy *= -0.5; }
                 if (this.y > canvas.height - rad) { this.y = canvas.height - rad; this.vy *= -0.5; }
 
+                // Melee Damage Calculation
                 if (nearestEnemy && this.role !== 'archer' && this.dashTimer <= 0 && this.cooldown <= 0) {
                     const dist = Math.hypot(this.x - nearestEnemy.x, this.y - nearestEnemy.y);
                     let reach = this.role === 'elephant' ? 70 : (this.weapon === 'spear' ? 60 : 40);
@@ -593,11 +658,8 @@
                             this.vy -= Math.sin(angleToEnemy) * 2;
                         }
                         
-                        if (this.hasIce) {
-                            nearestEnemy.freezeTimer = 60; 
-                        }
+                        if (this.hasIce) nearestEnemy.freezeTimer = 60; 
                         if (this.hasLight) nearestEnemy.blindTimer = 80;
-                        
                         if (this.role === 'ninja') {
                             this.vx -= Math.cos(angleToEnemy) * 15;
                             this.vy -= Math.sin(angleToEnemy) * 15;
@@ -608,6 +670,7 @@
         }
 
         canvas.addEventListener('mousedown', (e) => {
+            if (!gameRunning) return;
             const rect = canvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
@@ -634,16 +697,26 @@
             }
         });
 
-        function animate() {
-            ctx.fillStyle = '#2d5a27';
+        // Background Grid Pattern
+        function drawBackground() {
+            ctx.fillStyle = '#2d5a27'; // Base grass
             ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+            ctx.lineWidth = 1;
+            for(let i=0; i<canvas.width; i+=50) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,canvas.height); ctx.stroke(); }
+            for(let j=0; j<canvas.height; j+=50) { ctx.beginPath(); ctx.moveTo(0,j); ctx.lineTo(canvas.width,j); ctx.stroke(); }
 
             if (!wallOpen) {
-                ctx.fillStyle = '#555';
+                ctx.fillStyle = 'rgba(0,0,0,0.5)';
                 ctx.fillRect(canvas.width / 2 - 5, 0, 10, canvas.height);
             }
-            
-            // Draw Civilization Buildings FIRST so they are on the ground
+        }
+
+        function animate() {
+            if (!gameRunning) return;
+            drawBackground();
+
             buildings.forEach(b => b.draw());
 
             people = people.filter(p => p.hp > 0);
@@ -663,10 +736,9 @@
 
             document.getElementById('count-blue').innerText = b;
             document.getElementById('count-red').innerText = r;
+            
             requestAnimationFrame(animate);
         }
-
-        animate();
     </script>
 </body>
 </html>

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>WebBox V15 - Elephant Buff</title>
+    <title>WebBox V16 - Visual Overhaul</title>
     <style>
         body { margin: 0; display: flex; background: #111; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; user-select: none; }
         
@@ -41,8 +41,8 @@
 
     <div id="start-screen">
         <div class="modal">
-            <h1>WebBox V15</h1>
-            <p>Welcome to the ultimate Anime God-Simulator. Build civilizations, mount cannons on elephants, and watch insanely overpowered battles unfold.</p>
+            <h1>WebBox V16</h1>
+            <p>Visual overhaul update. Watch knights ride horses, archers draw their bows, and ninjas dart across the screen.</p>
             
             <div class="modal-grid">
                 <div>
@@ -72,7 +72,7 @@
     </div>
 
     <div id="sidebar">
-        <h2>WEBBOX V15</h2>
+        <h2>WEBBOX V16</h2>
         <div class="stat-panel">
             <div class="stat-row"><span>Blue Pop:</span> <span id="count-blue" class="blue-text">0</span></div>
             <div class="stat-row"><span>Red Pop:</span> <span id="count-red" class="red-text">0</span></div>
@@ -319,36 +319,20 @@
                     ctx.fillStyle = color;
                 }
 
+                let dir = Math.cos(this.aimAngle) >= 0 ? 1 : -1;
+                if(this.vx !== 0) dir = this.vx >= 0 ? 1 : -1;
+
                 if (this.role === 'elephant') {
-                    let dir = this.vx >= 0 ? 1 : -1;
                     let earColor = this.team === 'blue' ? '#3498db' : '#e74c3c';
-                    
-                    // Main Body
                     ctx.beginPath(); ctx.ellipse(this.x, this.y, 30, 25, 0, 0, Math.PI * 2); ctx.fill();
-                    
-                    // Legs
                     ctx.fillRect(this.x - 20, this.y + 10, 10, 20);
                     ctx.fillRect(this.x + 10, this.y + 10, 10, 20);
-
-                    // Head
                     ctx.beginPath(); ctx.arc(this.x + (25 * dir), this.y - 5, 18, 0, Math.PI * 2); ctx.fill();
-
-                    // Trunk
                     ctx.fillRect(this.x + (30 * dir), this.y, 16 * dir, 20); 
-
-                    // Ear
                     ctx.fillStyle = earColor;
                     ctx.beginPath(); ctx.ellipse(this.x + (15 * dir), this.y - 5, 10, 15, 0, 0, Math.PI * 2); ctx.fill();
-
-                    // Tusks
                     ctx.fillStyle = '#ecf0f1';
-                    ctx.beginPath();
-                    ctx.moveTo(this.x + (35 * dir), this.y + 5);
-                    ctx.lineTo(this.x + (50 * dir), this.y - 5);
-                    ctx.lineTo(this.x + (35 * dir), this.y + 10);
-                    ctx.fill();
-
-                    // Eye
+                    ctx.beginPath(); ctx.moveTo(this.x + (35 * dir), this.y + 5); ctx.lineTo(this.x + (50 * dir), this.y - 5); ctx.lineTo(this.x + (35 * dir), this.y + 10); ctx.fill();
                     ctx.fillStyle = '#111';
                     ctx.beginPath(); ctx.arc(this.x + (28 * dir), this.y - 10, 3, 0, Math.PI * 2); ctx.fill();
 
@@ -368,21 +352,75 @@
                     ctx.stroke();
                     ctx.fillStyle = this.team === 'blue' ? '#3498db' : '#e74c3c'; ctx.beginPath(); ctx.arc(this.x, this.y, 6, 0, Math.PI*2); ctx.fill();
                 }
-                else {
+                else if (this.role === 'knight') {
+                    ctx.fillStyle = '#8B4513';
+                    ctx.fillRect(this.x - 15, this.y - 5, 30, 15); 
+                    ctx.fillRect(this.x + (10 * dir), this.y - 15, 12, 15); 
+                    ctx.fillRect(this.x - 10, this.y + 10, 4, 10); 
+                    ctx.fillRect(this.x + 10, this.y + 10, 4, 10); 
+                    
+                    ctx.fillStyle = '#bdc3c7'; 
+                    ctx.fillRect(this.x - 5, this.y - 15, 10, 15); 
+                    ctx.beginPath(); ctx.arc(this.x, this.y - 20, 6, 0, Math.PI*2); ctx.fill(); 
+                    
+                    ctx.strokeStyle = '#ecf0f1'; ctx.lineWidth = 3;
+                    ctx.beginPath(); ctx.moveTo(this.x, this.y - 10); ctx.lineTo(this.x + (20 * dir), this.y - 25); ctx.stroke();
+                }
+                else if (this.role === 'ninja') {
+                    ctx.fillStyle = '#111';
+                    ctx.beginPath(); ctx.arc(this.x, this.y - 16, 10, 0, Math.PI*2); ctx.fill(); 
+                    ctx.fillRect(this.x - 8, this.y - 6, 16, 24); 
+                    ctx.fillRect(this.x - 8, this.y + 18, 6, 14); 
+                    ctx.fillRect(this.x + 2, this.y + 18, 6, 14);
+                    
+                    ctx.fillStyle = this.team === 'blue' ? '#3498db' : '#e74c3c';
+                    ctx.fillRect(this.x - 10, this.y - 20, 20, 5);
+                }
+                else if (this.role === 'swapper') {
+                    ctx.fillStyle = '#111';
+                    ctx.beginPath(); ctx.moveTo(this.x - 10, this.y - 20); ctx.lineTo(this.x, this.y - 32); ctx.lineTo(this.x + 10, this.y - 20); ctx.fill();
+                    
+                    ctx.fillStyle = this.flashTimer > 0 ? 'white' : (this.team === 'blue' ? '#3498db' : '#e74c3c');
+                    ctx.beginPath(); ctx.arc(this.x, this.y - 16, 10, 0, Math.PI*2); ctx.fill();
+                    ctx.fillRect(this.x - 8, this.y - 6, 16, 24);
+                    
+                    ctx.fillStyle = '#8e44ad'; ctx.fillRect(this.x - 8, this.y + 18, 6, 14); 
+                    ctx.fillStyle = '#222'; ctx.fillRect(this.x + 2, this.y + 18, 6, 14); 
+                }
+                else if (this.role === 'archer') {
                     ctx.beginPath(); ctx.arc(this.x, this.y - 16, 10, 0, Math.PI * 2); ctx.fill();
                     ctx.fillRect(this.x - 8, this.y - 6, 16, 24);
                     ctx.fillRect(this.x - 8, this.y + 18, 6, 14);
                     ctx.fillRect(this.x + 2, this.y + 18, 6, 14);
 
-                    if (this.role === 'knight') {
-                        ctx.fillStyle = '#7f8c8d'; ctx.fillRect(this.x - 10, this.y - 6, 20, 24); 
-                    } else if (this.role === 'ninja') {
-                        ctx.fillStyle = '#222'; ctx.fillRect(this.x - 8, this.y - 18, 16, 6); 
-                    } else if (this.role === 'archer') {
-                        ctx.fillStyle = '#2ecc71'; ctx.beginPath(); ctx.arc(this.x, this.y - 22, 6, 0, Math.PI); ctx.fill();
-                    } else if (this.role === 'swapper') {
-                        ctx.fillStyle = '#9b59b6'; ctx.fillRect(this.x - 9, this.y + 4, 18, 6);
+                    ctx.fillStyle = '#2ecc71'; ctx.beginPath(); ctx.arc(this.x, this.y - 22, 8, Math.PI, 0); ctx.fill();
+
+                    // Animating Bow
+                    ctx.save();
+                    ctx.translate(this.x, this.y - 6);
+                    ctx.rotate(this.aimAngle);
+                    
+                    ctx.strokeStyle = '#8B4513'; ctx.lineWidth = 2;
+                    ctx.beginPath(); ctx.arc(10, 0, 15, -Math.PI/2.5, Math.PI/2.5); ctx.stroke(); 
+                    
+                    let drawRatio = Math.max(0, (50 - this.cooldown) / 50); 
+                    let stringPull = -5 + (10 * drawRatio); 
+                    
+                    ctx.strokeStyle = '#fff'; ctx.lineWidth = 1;
+                    ctx.beginPath(); ctx.moveTo(15, -14); ctx.lineTo(stringPull, 0); ctx.lineTo(15, 14); ctx.stroke(); 
+                    
+                    if (drawRatio > 0.2) { 
+                        ctx.strokeStyle = '#ccc'; ctx.lineWidth = 2;
+                        ctx.beginPath(); ctx.moveTo(stringPull, 0); ctx.lineTo(18, 0); ctx.stroke();
                     }
+                    ctx.restore();
+                }
+                else {
+                    // Normal or Shifter
+                    ctx.beginPath(); ctx.arc(this.x, this.y - 16, 10, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillRect(this.x - 8, this.y - 6, 16, 24);
+                    ctx.fillRect(this.x - 8, this.y + 18, 6, 14);
+                    ctx.fillRect(this.x + 2, this.y + 18, 6, 14);
                 }
 
                 if (this.isShifter) {
@@ -401,7 +439,8 @@
                     ctx.fillStyle = '#111'; ctx.beginPath(); ctx.arc(this.x, this.y - (this.role === 'elephant' ? 40 : 28), 10, 0, Math.PI * 2); ctx.fill();
                 }
 
-                if (this.weapon && this.role !== 'elephant' && this.role !== 'cannon') {
+                // Draw generic weapon only for normal/shifter if they have one
+                if (this.weapon && this.role !== 'elephant' && this.role !== 'cannon' && this.role !== 'knight' && this.role !== 'archer') {
                     ctx.strokeStyle = '#ecf0f1'; ctx.lineWidth = 4; ctx.beginPath();
                     let length = this.weapon === 'spear' ? 40 : 24; let angle = Math.atan2(this.vy, this.vx);
                     ctx.moveTo(this.x, this.y); ctx.lineTo(this.x + Math.cos(angle) * length, this.y + Math.sin(angle) * length); ctx.stroke();
@@ -478,7 +517,7 @@
                         }
                     } else if (this.role !== 'cannon') {
                         this.wanderAngle += (Math.random() - 0.5) * 0.4;
-                        let wanderSpd = this.role === 'elephant' ? 0.28 : 0.3; // Buffed idle speed
+                        let wanderSpd = this.role === 'elephant' ? 0.28 : 0.3;
                         this.vx += Math.cos(this.wanderAngle) * wanderSpd; this.vy += Math.sin(this.wanderAngle) * wanderSpd;
                     }
                 }
@@ -523,14 +562,13 @@
                 }
 
                 // AI LOGIC
-                let speedLimit = this.role === 'cannon' ? 0.5 : (this.role === 'elephant' ? 2.85 : 3.0); // 5% slower than 3.0
+                let speedLimit = this.role === 'cannon' ? 0.5 : (this.role === 'elephant' ? 2.85 : (this.role === 'knight' ? 4.0 : 3.0));
                 if (this.dashTimer > 0) speedLimit = 15.0; 
 
                 if (nearestEnemy) {
                     let angle = Math.atan2(nearestEnemy.y - this.y, nearestEnemy.x - this.x);
                     this.aimAngle = angle;
                     
-                    // Cannon Fire Logic
                     if ((this.role === 'cannon' || this.hasCannon) && minDist < 500 && this.powerCooldown <= 0 && (wallOpen || Math.abs(this.x - nearestEnemy.x) > 30)) {
                         projectiles.push(new Projectile(this.x, this.y - (this.role==='elephant'?30:0), nearestEnemy, 75, this.team, 'cannonball'));
                         this.powerCooldown = 150; 
@@ -539,7 +577,6 @@
                         this.vy -= Math.sin(angle) * recoil;
                     }
 
-                    // OP SHIFTER
                     if (this.isShifter && this.cooldown <= 0 && minDist < 150 && !nearestEnemy.isShifter && nearestEnemy.role !== 'cannon') {
                         let stole = false;
                         if (nearestEnemy.role !== 'normal') { this.role = nearestEnemy.role; nearestEnemy.role = 'normal'; stole = true; }
@@ -556,7 +593,6 @@
                         }
                     }
                     
-                    // Elemental Projectiles
                     if ((this.hasFire || this.hasIce) && minDist < 300 && this.powerCooldown <= 0 && (wallOpen || Math.abs(this.x - nearestEnemy.x) > 30)) {
                         let type = this.hasFire ? 'fire' : 'ice';
                         projectiles.push(new Projectile(this.x, this.y, nearestEnemy, 10, this.team, type));
@@ -564,13 +600,11 @@
                         this.vx -= Math.cos(angle) * 5; this.vy -= Math.sin(angle) * 5;
                     }
 
-                    // Dash
                     if (this.role !== 'archer' && this.role !== 'elephant' && this.role !== 'cannon' && minDist < 150 && minDist > 50 && this.cooldown <= 0 && this.dashTimer <= 0) {
                         this.dashTimer = 10; this.cooldown = 80;
                         this.vx += Math.cos(angle) * 15; this.vy += Math.sin(angle) * 15;
                     }
 
-                    // OP SWAPPER
                     if (this.role === 'swapper' && this.cooldown <= 0 && minDist < 150) {
                         let possibleTargets = people.filter(p => p !== this && p.role !== 'cannon');
                         if (possibleTargets.length > 0) {
@@ -612,16 +646,15 @@
                         }
                     }
                     else if (this.dashTimer <= 0 && this.role !== 'cannon') {
-                        let accel = this.role === 'elephant' ? 0.18 : 0.2; // Buffed acceleration
+                        let accel = this.role === 'elephant' ? 0.18 : 0.2;
                         this.vx += Math.cos(angle) * accel; this.vy += Math.sin(angle) * accel;
                     }
                 } else if (wallOpen && this.role !== 'cannon') {
                     this.wanderAngle += (Math.random() - 0.5) * 0.4;
-                    let wanderSpd = this.role === 'elephant' ? 0.28 : 0.3; // Buffed idle speed
+                    let wanderSpd = this.role === 'elephant' ? 0.28 : 0.3;
                     this.vx += Math.cos(this.wanderAngle) * wanderSpd; this.vy += Math.sin(this.wanderAngle) * wanderSpd;
                 }
 
-                // Physics & Boundary limits
                 this.vx *= 0.88; this.vy *= 0.88;
                 if (this.freezeTimer > 0) speedLimit = 0.4; 
                 let speed = Math.hypot(this.vx, this.vy);
@@ -643,7 +676,6 @@
                 if (this.y < rad) { this.y = rad; this.vy *= -0.5; }
                 if (this.y > canvas.height - rad) { this.y = canvas.height - rad; this.vy *= -0.5; }
 
-                // Melee Damage Calculation
                 if (nearestEnemy && this.role !== 'archer' && this.role !== 'cannon' && this.dashTimer <= 0 && this.cooldown <= 0) {
                     const dist = Math.hypot(this.x - nearestEnemy.x, this.y - nearestEnemy.y);
                     let reach = this.role === 'elephant' ? 70 : (this.weapon === 'spear' ? 60 : 40);

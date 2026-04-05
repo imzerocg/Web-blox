@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>WebBox V14 - Overpowered Edition</title>
+    <title>WebBox V15 - Elephant Buff</title>
     <style>
         body { margin: 0; display: flex; background: #111; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; user-select: none; }
         
@@ -41,7 +41,7 @@
 
     <div id="start-screen">
         <div class="modal">
-            <h1>WebBox V14</h1>
+            <h1>WebBox V15</h1>
             <p>Welcome to the ultimate Anime God-Simulator. Build civilizations, mount cannons on elephants, and watch insanely overpowered battles unfold.</p>
             
             <div class="modal-grid">
@@ -72,7 +72,7 @@
     </div>
 
     <div id="sidebar">
-        <h2>WEBBOX V14</h2>
+        <h2>WEBBOX V15</h2>
         <div class="stat-panel">
             <div class="stat-row"><span>Blue Pop:</span> <span id="count-blue" class="blue-text">0</span></div>
             <div class="stat-row"><span>Red Pop:</span> <span id="count-red" class="red-text">0</span></div>
@@ -272,7 +272,7 @@
                 this.team = team;
                 this.role = role; 
                 this.isShifter = (role === 'shifter');
-                this.hp = role === 'elephant' ? 500 : (role === 'knight' ? 150 : (role === 'swapper' ? 120 : (role === 'cannon' ? 1 : 100)));
+                this.hp = role === 'elephant' ? 750 : (role === 'knight' ? 150 : (role === 'swapper' ? 120 : (role === 'cannon' ? 1 : 100)));
                 this.maxHp = this.hp;
                 
                 this.hasFire = false;
@@ -320,18 +320,44 @@
                 }
 
                 if (this.role === 'elephant') {
-                    ctx.fillRect(this.x - 25, this.y - 20, 50, 40);
                     let dir = this.vx >= 0 ? 1 : -1;
-                    ctx.fillRect(this.x + (25 * dir), this.y - 10, 15 * dir, 30);
-                    ctx.fillStyle = 'white';
-                    ctx.fillRect(this.x + (25 * dir), this.y, 12 * dir, 4);
+                    let earColor = this.team === 'blue' ? '#3498db' : '#e74c3c';
+                    
+                    // Main Body
+                    ctx.beginPath(); ctx.ellipse(this.x, this.y, 30, 25, 0, 0, Math.PI * 2); ctx.fill();
+                    
+                    // Legs
+                    ctx.fillRect(this.x - 20, this.y + 10, 10, 20);
+                    ctx.fillRect(this.x + 10, this.y + 10, 10, 20);
+
+                    // Head
+                    ctx.beginPath(); ctx.arc(this.x + (25 * dir), this.y - 5, 18, 0, Math.PI * 2); ctx.fill();
+
+                    // Trunk
+                    ctx.fillRect(this.x + (30 * dir), this.y, 16 * dir, 20); 
+
+                    // Ear
+                    ctx.fillStyle = earColor;
+                    ctx.beginPath(); ctx.ellipse(this.x + (15 * dir), this.y - 5, 10, 15, 0, 0, Math.PI * 2); ctx.fill();
+
+                    // Tusks
+                    ctx.fillStyle = '#ecf0f1';
+                    ctx.beginPath();
+                    ctx.moveTo(this.x + (35 * dir), this.y + 5);
+                    ctx.lineTo(this.x + (50 * dir), this.y - 5);
+                    ctx.lineTo(this.x + (35 * dir), this.y + 10);
+                    ctx.fill();
+
+                    // Eye
+                    ctx.fillStyle = '#111';
+                    ctx.beginPath(); ctx.arc(this.x + (28 * dir), this.y - 10, 3, 0, Math.PI * 2); ctx.fill();
 
                     if (this.hasCannon) {
                         ctx.strokeStyle = '#111'; ctx.lineWidth = 8; ctx.beginPath();
-                        ctx.moveTo(this.x, this.y - 25);
-                        ctx.lineTo(this.x + Math.cos(this.aimAngle)*30, this.y - 25 + Math.sin(this.aimAngle)*30);
+                        ctx.moveTo(this.x, this.y - 30);
+                        ctx.lineTo(this.x + Math.cos(this.aimAngle)*35, this.y - 30 + Math.sin(this.aimAngle)*35);
                         ctx.stroke();
-                        ctx.fillStyle = '#333'; ctx.beginPath(); ctx.arc(this.x, this.y - 25, 10, 0, Math.PI*2); ctx.fill();
+                        ctx.fillStyle = '#333'; ctx.beginPath(); ctx.arc(this.x, this.y - 30, 12, 0, Math.PI*2); ctx.fill();
                     }
                 } 
                 else if (this.role === 'cannon') {
@@ -452,7 +478,7 @@
                         }
                     } else if (this.role !== 'cannon') {
                         this.wanderAngle += (Math.random() - 0.5) * 0.4;
-                        let wanderSpd = this.role === 'elephant' ? 0.15 : 0.3;
+                        let wanderSpd = this.role === 'elephant' ? 0.28 : 0.3; // Buffed idle speed
                         this.vx += Math.cos(this.wanderAngle) * wanderSpd; this.vy += Math.sin(this.wanderAngle) * wanderSpd;
                     }
                 }
@@ -497,7 +523,7 @@
                 }
 
                 // AI LOGIC
-                let speedLimit = this.role === 'cannon' ? 0.5 : (this.role === 'elephant' ? 1.5 : 3.0);
+                let speedLimit = this.role === 'cannon' ? 0.5 : (this.role === 'elephant' ? 2.85 : 3.0); // 5% slower than 3.0
                 if (this.dashTimer > 0) speedLimit = 15.0; 
 
                 if (nearestEnemy) {
@@ -513,7 +539,7 @@
                         this.vy -= Math.sin(angle) * recoil;
                     }
 
-                    // OP SHIFTER BUFF - Instant Steal, huge range, zero cooldown
+                    // OP SHIFTER
                     if (this.isShifter && this.cooldown <= 0 && minDist < 150 && !nearestEnemy.isShifter && nearestEnemy.role !== 'cannon') {
                         let stole = false;
                         if (nearestEnemy.role !== 'normal') { this.role = nearestEnemy.role; nearestEnemy.role = 'normal'; stole = true; }
@@ -524,7 +550,7 @@
                         if (nearestEnemy.weapon) { this.weapon = nearestEnemy.weapon; nearestEnemy.weapon = null; stole = true; }
                         
                         if (stole) {
-                            this.cooldown = 10; // Instantly ready to steal again!
+                            this.cooldown = 10; 
                             nearestEnemy.flashTimer = 10;
                             nearestEnemy.vx -= Math.cos(angle) * 15; nearestEnemy.vy -= Math.sin(angle) * 15;
                         }
@@ -544,23 +570,21 @@
                         this.vx += Math.cos(angle) * 15; this.vy += Math.sin(angle) * 15;
                     }
 
-                    // OP SWAPPER BUFF - Instant Hit & Swap Combo (Boogie Woogie)
+                    // OP SWAPPER
                     if (this.role === 'swapper' && this.cooldown <= 0 && minDist < 150) {
                         let possibleTargets = people.filter(p => p !== this && p.role !== 'cannon');
                         if (possibleTargets.length > 0) {
-                            // Instant Damage before swap
                             nearestEnemy.hp -= 10;
                             nearestEnemy.flashTimer = 5;
                             nearestEnemy.vx += Math.cos(angle) * 10;
                             nearestEnemy.vy += Math.sin(angle) * 10;
 
-                            // The Swap
                             let target = possibleTargets[Math.floor(Math.random() * possibleTargets.length)];
                             let tempX = this.x; let tempY = this.y;
                             this.x = target.x; this.y = target.y;
                             target.x = tempX; target.y = tempY;
                             
-                            this.cooldown = 20; // Almost zero cooldown, unstoppable!
+                            this.cooldown = 20; 
                             this.dashTimer = 0;
                         }
                     }
@@ -588,12 +612,12 @@
                         }
                     }
                     else if (this.dashTimer <= 0 && this.role !== 'cannon') {
-                        let accel = this.role === 'elephant' ? 0.08 : 0.2;
+                        let accel = this.role === 'elephant' ? 0.18 : 0.2; // Buffed acceleration
                         this.vx += Math.cos(angle) * accel; this.vy += Math.sin(angle) * accel;
                     }
                 } else if (wallOpen && this.role !== 'cannon') {
                     this.wanderAngle += (Math.random() - 0.5) * 0.4;
-                    let wanderSpd = this.role === 'elephant' ? 0.15 : 0.3;
+                    let wanderSpd = this.role === 'elephant' ? 0.28 : 0.3; // Buffed idle speed
                     this.vx += Math.cos(this.wanderAngle) * wanderSpd; this.vy += Math.sin(this.wanderAngle) * wanderSpd;
                 }
 

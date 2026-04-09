@@ -2,498 +2,299 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>WebBox V20 - Anime Gods</title>
+    <title>WebBox V21 - Ultimate 2D Edition</title>
     <style>
-        body { margin: 0; display: flex; background: #111; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; user-select: none; }
-        
-        #sidebar { width: 280px; background: linear-gradient(to bottom, #2a2a2a, #1a1a1a); height: 100vh; padding: 15px; box-sizing: border-box; border-right: 3px solid #444; overflow-y: auto; z-index: 10; box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
-        #gameCanvas { flex-grow: 1; cursor: crosshair; }
-        
-        button { width: 100%; padding: 8px; margin-bottom: 6px; cursor: pointer; background: #333; color: white; border: 1px solid #555; border-radius: 6px; font-weight: bold; transition: 0.1s; font-size: 0.9em; }
+        body { margin: 0; display: flex; background: #111; color: white; font-family: sans-serif; overflow: hidden; user-select: none; }
+        #sidebar { width: 280px; background: #1a1a1a; height: 100vh; padding: 15px; box-sizing: border-box; border-right: 3px solid #444; overflow-y: auto; z-index: 10; }
+        #gameCanvas { flex-grow: 1; background: #2d5a27; cursor: crosshair; }
+        button { width: 100%; padding: 6px; margin-bottom: 4px; cursor: pointer; background: #333; color: white; border: 1px solid #555; border-radius: 4px; font-weight: bold; font-size: 0.85em; }
         button:hover { background: #444; }
-        button.active { background: #e67e22; border-color: #f1c40f; box-shadow: 0 0 10px rgba(230, 126, 34, 0.5); }
-        
-        /* Dynamic Team Colors */
-        .team-btn.blue { background: #2980b9; border-color: #3498db; }
-        .team-btn.red { background: #c0392b; border-color: #e74c3c; }
-        .team-btn.green { background: #27ae60; border-color: #2ecc71; }
-        .team-btn.yellow { background: #f39c12; border-color: #f1c40f; color: #111; }
-        .team-btn.orange { background: #d35400; border-color: #e67e22; }
-        .team-btn.purple { background: #8e44ad; border-color: #9b59b6; }
-        
-        .anime-btn { background: #f1c40f; color: #111; border-color: #f39c12; text-transform: uppercase; letter-spacing: 1px; }
-        .anime-btn:hover { background: #f39c12; }
-        
-        .stat-panel { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; margin-bottom: 10px; font-size: 0.85em; border: 1px solid #444; text-align: center; }
-        h2 { margin: 0 0 8px 0; color: #f1c40f; text-align: center; letter-spacing: 1px; font-size: 1.3em;}
-        hr { border: 0; border-top: 1px solid #444; margin: 10px 0; }
+        button.active { background: #e67e22; border-color: #f1c40f; }
+        .team-btn { border-width: 2px; }
+        .anime-btn { background: #f1c40f; color: #111; border-color: #f39c12; }
+        .stat-panel { background: rgba(0,0,0,0.5); padding: 8px; border-radius: 5px; margin-bottom: 8px; font-size: 0.85em; text-align: center; border: 1px solid #444; }
+        h2 { margin: 0 0 5px 0; color: #f1c40f; text-align: center; font-size: 1.2em; }
+        hr { border: 0; border-top: 1px solid #444; margin: 8px 0; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
     </style>
 </head>
 <body>
 
     <div id="sidebar">
-        <h2>WEBBOX V20</h2>
+        <h2>WEBBOX V21</h2>
         <div class="stat-panel">
-            <b style="font-size:1.2em">Warriors Alive: <span id="total-count" style="color:#2ecc71">0</span></b><br><br>
+            <b style="font-size:1.1em">Total Units: <span id="total-count" style="color:#2ecc71">0</span></b><br>
             Tool: <span id="current-tool" style="color:#f1c40f;">Normal</span>
         </div>
         
-        <button id="teamToggle" onclick="toggleTeam()" class="team-btn blue">Team: BLUE</button>
-        <button onclick="toggleWall()" style="background: #555;">Toggle Wall</button>
+        <button id="teamToggle" onclick="toggleTeam()" class="team-btn" style="background:#3498db">Team: BLUE</button>
+        <div class="grid-2">
+            <button onclick="toggleCiv()" id="civBtn" style="background:#8e44ad">Civ: ON</button>
+            <button onclick="toggleWall()" id="wallBtn" style="background:#c0392b">Wall: CLOSED</button>
+        </div>
         <hr>
-        <b>Basic Units</b>
-        <button onclick="setPower('spawn-normal', this)" class="active">Normal</button>
-        <button onclick="setPower('spawn-archer', this)">Archer</button>
-        <button onclick="setPower('spawn-knight', this)">Knight</button>
-        <button onclick="setPower('spawn-ninja', this)">Ninja</button>
-        <button onclick="setPower('spawn-swapper', this)">Swapper</button>
-        <button onclick="setPower('spawn-shifter', this)">Shifter</button>
+        <div class="grid-2">
+            <button onclick="setPower('spawn-normal', this)" class="active">Normal</button>
+            <button onclick="setPower('spawn-archer', this)">Archer</button>
+            <button onclick="setPower('spawn-knight', this)">Knight</button>
+            <button onclick="setPower('spawn-ninja', this)">Ninja</button>
+            <button onclick="setPower('spawn-swapper', this)">Swapper</button>
+            <button onclick="setPower('spawn-shifter', this)">Shifter</button>
+            <button onclick="setPower('spawn-elephant', this)">Elephant</button>
+            <button onclick="setPower('cannon', this)">Cannon</button>
+        </div>
         <hr>
-        <b style="color: #f1c40f;">Anime Gods (Solo Teams)</b>
-        <button onclick="setPower('spawn-luffy', this)" class="anime-btn">🏴‍☠️ Spawn Luffy</button>
-        <button onclick="setPower('spawn-gojo', this)" class="anime-btn">🤞 Spawn Gojo</button>
-        <button onclick="setPower('spawn-naruto', this)" class="anime-btn">🦊 Spawn Naruto</button>
-        <button onclick="setPower('spawn-goku', this)" class="anime-btn">🐉 Spawn Goku</button>
+        <div class="grid-2">
+            <button onclick="setPower('spawn-luffy', this)" class="anime-btn">Luffy</button>
+            <button onclick="setPower('spawn-gojo', this)" class="anime-btn">Gojo</button>
+            <button onclick="setPower('spawn-naruto', this)" class="anime-btn">Naruto</button>
+            <button onclick="setPower('spawn-goku', this)" class="anime-btn">Goku</button>
+        </div>
         <hr>
-        <b>Powers</b>
-        <button onclick="setPower('weapon', this)">🗡️ Give Weapon</button>
-        <button onclick="setPower('fire', this)">🔥 Fire Power</button>
-        <button onclick="setPower('ice', this)">❄️ Ice Power</button>
-        <button onclick="setPower('strike', this)">⚡ Smite (Kill)</button>
+        <div class="grid-2">
+            <button onclick="setPower('weapon', this)">🗡️ Weapon</button>
+            <button onclick="setPower('strike', this)">⚡ Smite</button>
+            <button onclick="setPower('fire', this)">🔥 Fire</button>
+            <button onclick="setPower('ice', this)">❄️ Ice</button>
+            <button onclick="setPower('light', this)">✨ Light</button>
+            <button onclick="setPower('wind', this)">🌪️ Wind</button>
+        </div>
     </div>
 
     <canvas id="gameCanvas"></canvas>
 
     <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const toolDisplay = document.getElementById('current-tool');
-
-        let people = [];
-        let projectiles = [];
-        
-        let currentPower = 'spawn-normal';
+        const cvs = document.getElementById('gameCanvas'), ctx = cvs.getContext('2d');
+        let ppl = [], projs = [], bldgs = [], curPwr = 'spawn-normal', wallOpen = false, civOn = true;
         const teams = ['blue', 'red', 'green', 'yellow', 'orange', 'purple'];
-        let currentTeamIdx = 0;
-        let wallOpen = true;
+        const colors = { blue:'#3498db', red:'#e74c3c', green:'#2ecc71', yellow:'#f1c40f', orange:'#e67e22', purple:'#9b59b6', luffy:'#c0392b', gojo:'#bdc3c7', naruto:'#f39c12', goku:'#e67e22', kurama:'#d35400' };
+        let tIdx = 0;
 
-        const teamColors = {
-            'blue': '#3498db', 'red': '#e74c3c', 'green': '#2ecc71', 
-            'yellow': '#f1c40f', 'orange': '#e67e22', 'purple': '#9b59b6',
-            'luffy': '#c0392b', 'gojo': '#bdc3c7', 'naruto': '#f39c12', 'goku': '#e67e22', 'kurama': '#d35400'
-        };
-
-        function resize() { canvas.width = window.innerWidth - 280; canvas.height = window.innerHeight; }
-        window.addEventListener('resize', resize); resize();
+        function rsz() { cvs.width = window.innerWidth - 280; cvs.height = window.innerHeight; }
+        window.addEventListener('resize', rsz); rsz();
 
         function toggleTeam() {
-            currentTeamIdx = (currentTeamIdx + 1) % teams.length;
-            let team = teams[currentTeamIdx];
-            let btn = document.getElementById('teamToggle');
-            btn.className = `team-btn ${team}`;
-            btn.innerText = `Team: ${team.toUpperCase()}`;
+            tIdx = (tIdx + 1) % teams.length;
+            let t = teams[tIdx], btn = document.getElementById('teamToggle');
+            btn.style.background = colors[t]; btn.innerText = `Team: ${t.toUpperCase()}`;
         }
-
-        function setPower(power, btn) {
-            currentPower = power;
-            toolDisplay.innerText = power.replace('spawn-', '').toUpperCase();
-            document.querySelectorAll('#sidebar button').forEach(b => {
-                if(b.id !== 'teamToggle' && !b.innerText.includes('Wall')) b.classList.remove('active');
-            });
+        function toggleWall() { wallOpen = !wallOpen; document.getElementById('wallBtn').innerText = wallOpen ? "Wall: OPEN" : "Wall: CLOSED"; document.getElementById('wallBtn').style.background = wallOpen ? "#e67e22" : "#c0392b"; }
+        function toggleCiv() { civOn = !civOn; document.getElementById('civBtn').innerText = civOn ? "Civ: ON" : "Civ: OFF"; }
+        function setPower(p, btn) {
+            curPwr = p; document.getElementById('current-tool').innerText = p.replace('spawn-', '').toUpperCase();
+            document.querySelectorAll('#sidebar button').forEach(b => { if(!b.id.includes('Toggle') && !b.id.includes('Btn')) b.classList.remove('active'); });
             btn.classList.add('active');
         }
 
-        function toggleWall() { wallOpen = !wallOpen; }
+        class Bldg {
+            constructor(x,y,t,typ) { this.x=x; this.y=y; this.t=t; this.typ=typ; }
+            draw() {
+                ctx.save(); ctx.translate(this.x, this.y);
+                ctx.fillStyle='rgba(0,0,0,0.4)'; ctx.beginPath(); ctx.ellipse(0,10,25,10,0,0,Math.PI*2); ctx.fill();
+                ctx.strokeStyle=colors[this.t]; ctx.lineWidth=2;
+                if(this.typ==='house') { ctx.fillStyle='#8B4513'; ctx.fillRect(-15,-10,30,20); ctx.fillStyle='#A52A2A'; ctx.beginPath(); ctx.moveTo(-20,-10); ctx.lineTo(0,-25); ctx.lineTo(20,-10); ctx.fill(); ctx.strokeRect(-15,-10,30,20); }
+                if(this.typ==='stonebox') { ctx.fillStyle='#696969'; ctx.fillRect(-15,-15,30,30); ctx.fillStyle='#A9A9A9'; ctx.fillRect(-10,-10,20,20); ctx.strokeRect(-15,-15,30,30); }
+                if(this.typ==='shrine') { ctx.fillStyle='#DAA520'; ctx.fillRect(-12,-5,24,15); ctx.fillStyle='#FFF8DC'; ctx.fillRect(-6,-20,12,15); ctx.fillStyle='#00FFFF'; ctx.beginPath(); ctx.arc(0,-25,8,0,Math.PI*2); ctx.fill(); ctx.strokeRect(-12,-5,24,15); }
+                ctx.restore();
+            }
+        }
 
-        class Projectile {
-            constructor(x, y, target, dmg, team, type) {
-                this.x = x; this.y = y; this.target = target; this.dmg = dmg; this.team = team; this.type = type; 
-                let angle = Math.atan2(target.y - y, target.x - x);
-                let speed = 12;
-                this.vx = Math.cos(angle) * speed; this.vy = Math.sin(angle) * speed;
-                this.active = true;
+        class Proj {
+            constructor(x,y,tgt,dmg,tm,typ) {
+                this.x=x; this.y=y; this.tgt=tgt; this.dmg=dmg; this.tm=tm; this.typ=typ;
+                let a = Math.atan2(tgt.y-y, tgt.x-x), spd = typ==='cannonball'?18:12;
+                this.vx = Math.cos(a)*spd; this.vy = Math.sin(a)*spd; this.act = true;
             }
             update() {
-                this.x += this.vx; this.y += this.vy;
-                if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) this.active = false;
-                
-                if (this.target && this.target.hp > 0 && Math.hypot(this.x - this.target.x, this.y - this.target.y) < 25) {
-                    this.target.hp -= this.dmg; this.target.flashTimer = 5;
-                    if (this.type === 'ice') this.target.freezeTimer = 80;
-                    if (this.type === 'fire') this.target.hp -= 5; 
-                    
-                    this.target.vx += this.vx * 0.5; this.target.vy += this.vy * 0.5;
-                    this.active = false;
+                this.x+=this.vx; this.y+=this.vy;
+                if(this.x<0||this.x>cvs.width||this.y<0||this.y>cvs.height) this.act=false;
+                if(this.tgt && this.tgt.hp>0 && Math.hypot(this.x-this.tgt.x, this.y-this.tgt.y)<(this.tgt.r==='elephant'?45:25)) {
+                    this.tgt.hp-=this.dmg; this.tgt.ft=5;
+                    if(this.typ==='ice') this.tgt.frz=80; if(this.typ==='fire') this.tgt.hp-=5;
+                    let pr = this.tgt.r==='elephant'?0.1:(this.tgt.r==='cannon'?0:0.5); if(this.typ==='cannonball') pr*=4;
+                    this.tgt.vx+=this.vx*pr; this.tgt.vy+=this.vy*pr; this.act=false;
                 }
             }
             draw() {
-                ctx.fillStyle = this.type === 'fire' ? '#f39c12' : (this.type === 'ice' ? '#00ffff' : '#fff');
-                ctx.beginPath(); ctx.arc(this.x, this.y, 6, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle=this.typ==='cannonball'?'#222':(this.typ==='fire'?'#f39c12':(this.typ==='ice'?'#0ff':'#fff'));
+                ctx.beginPath(); ctx.arc(this.x,this.y,this.typ==='cannonball'?8:6,0,Math.PI*2); ctx.fill();
             }
         }
 
         class Person {
-            constructor(x, y, team, role) {
-                this.x = x; this.y = y; this.team = team; this.role = role; 
-                this.isShifter = (role === 'shifter');
-                this.isAnime = ['luffy', 'gojo', 'naruto', 'goku', 'kurama'].includes(role);
-                
-                if (this.isAnime) this.team = role; // Anime chars fight for themselves
-
-                this.hp = 100;
-                if(role === 'knight') this.hp = 150;
-                if(role === 'swapper') this.hp = 120;
-                if(this.isAnime) this.hp = role === 'goku' ? 750 : 500;
-                if(role === 'kurama') this.hp = 1000;
-                this.maxHp = this.hp;
-
-                this.weapon = null; this.hasFire = false; this.hasIce = false;
-                this.freezeTimer = 0; this.flashTimer = 0;
-                this.cooldown = 0; this.dashTimer = 0;
-                this.ninjaOrbitDir = Math.random() > 0.5 ? 1 : -1;
-                this.aimAngle = 0;
-                this.vx = 0; this.vy = 0;
-
-                // Anime Specific States
-                this.punchTimer = 0; this.punchX = 0; this.punchY = 0;
-                this.kamehamehaTimer = 0; this.usedKamehameha = false;
-                this.gojoAttack = 0; // 1=Red, 2=Blue, 3=Purple
-                this.gojoTimer = 0;
+            constructor(x,y,tm,r) {
+                this.x=x; this.y=y; this.t=tm; this.r=r; 
+                this.isA = ['luffy','gojo','naruto','goku','kurama'].includes(r);
+                if(this.isA) this.t=r;
+                this.hp = r==='elephant'?750:(r==='knight'?150:(r==='swapper'?120:(r==='cannon'?1:(r==='goku'?750:(r==='kurama'?1000:(this.isA?500:100))))));
+                this.mHp = this.hp; this.age = 0; this.task = null; this.tTmr = 0; this.cW = false; this.cP = false;
+                this.wpn = null; this.hF=false; this.hI=false; this.hL=false; this.hW=false; this.hC=false;
+                this.frz=0; this.blnd=0; this.ft=0; this.cd=0; this.pCd=0; this.dT=0;
+                this.nO = Math.random()>0.5?1:-1; this.wA = Math.random()*Math.PI*2; this.aA = 0; this.vx=0; this.vy=0;
+                this.pTmr=0; this.pX=0; this.pY=0; this.kUse=false; this.kTmr=0; this.gTmr=0; this.gAtk=0;
             }
-
             draw() {
+                let bs=this.r==='elephant'?30:(this.r==='cannon'?15:(this.r==='kurama'?40:12));
+                ctx.fillStyle='rgba(0,0,0,0.3)'; ctx.beginPath(); ctx.ellipse(this.x,this.y+bs,bs,bs/2,0,0,Math.PI*2); ctx.fill();
                 ctx.save();
-                if (this.flashTimer > 0) {
-                    ctx.fillStyle = 'white'; this.flashTimer--;
+                ctx.fillStyle=this.ft>0?'white':(colors[this.t]||'#fff');
+                if(this.ft<=0 && this.hF) ctx.fillStyle='#ff4500'; if(this.ft<=0 && this.hI) ctx.fillStyle='#a0e7ff';
+                let dir = Math.cos(this.aA)>=0?1:-1; if(this.vx!==0) dir=this.vx>=0?1:-1;
+
+                if(this.r==='luffy' && this.pTmr>0) { ctx.strokeStyle='#f1c27d'; ctx.lineWidth=6; ctx.beginPath(); ctx.moveTo(this.x,this.y); ctx.lineTo(this.pX,this.pY); ctx.stroke(); ctx.fillStyle='#e67e22'; ctx.beginPath(); ctx.arc(this.pX,this.pY,15,0,Math.PI*2); ctx.fill(); this.pTmr--; }
+                if(this.r==='goku' && this.kTmr>0) { ctx.fillStyle=`rgba(0,255,255,${this.kTmr/60})`; ctx.fillRect(0,this.y-40,cvs.width,80); ctx.fillStyle=`rgba(255,255,255,${this.kTmr/60})`; ctx.fillRect(0,this.y-20,cvs.width,40); this.kTmr--; }
+                if(this.r==='gojo' && this.gTmr>0) { ctx.beginPath(); ctx.arc(this.x,this.y,(30-this.gTmr)*5,0,Math.PI*2); if(this.gAtk===1){ctx.fillStyle=`rgba(255,0,0,${this.gTmr/30})`; ctx.fill();} if(this.gAtk===2){ctx.fillStyle=`rgba(0,0,255,${this.gTmr/30})`; ctx.fill();} if(this.gAtk===3){ctx.fillStyle=`rgba(142,68,173,${this.gTmr/30})`; ctx.fillRect(0,this.y-60,cvs.width,120);} this.gTmr--; }
+
+                if(this.r==='elephant') {
+                    ctx.beginPath(); ctx.ellipse(this.x,this.y,30,25,0,0,Math.PI*2); ctx.fill();
+                    ctx.fillRect(this.x-20,this.y+10,10,20); ctx.fillRect(this.x+10,this.y+10,10,20);
+                    ctx.beginPath(); ctx.arc(this.x+(25*dir),this.y-5,18,0,Math.PI*2); ctx.fill(); ctx.fillRect(this.x+(30*dir),this.y,16*dir,20);
+                    ctx.fillStyle=colors[this.t]; ctx.beginPath(); ctx.ellipse(this.x+(15*dir),this.y-5,10,15,0,0,Math.PI*2); ctx.fill();
+                    ctx.fillStyle='#ecf0f1'; ctx.beginPath(); ctx.moveTo(this.x+(35*dir),this.y+5); ctx.lineTo(this.x+(50*dir),this.y-5); ctx.lineTo(this.x+(35*dir),this.y+10); ctx.fill();
+                    ctx.fillStyle='#111'; ctx.beginPath(); ctx.arc(this.x+(28*dir),this.y-10,3,0,Math.PI*2); ctx.fill();
+                    if(this.hC){ ctx.strokeStyle='#111'; ctx.lineWidth=8; ctx.beginPath(); ctx.moveTo(this.x,this.y-30); ctx.lineTo(this.x+Math.cos(this.aA)*35,this.y-30+Math.sin(this.aA)*35); ctx.stroke(); ctx.fillStyle='#333'; ctx.beginPath(); ctx.arc(this.x,this.y-30,12,0,Math.PI*2); ctx.fill(); }
+                } else if(this.r==='cannon') {
+                    ctx.fillStyle='#333'; ctx.beginPath(); ctx.arc(this.x,this.y,12,0,Math.PI*2); ctx.fill();
+                    ctx.strokeStyle='#111'; ctx.lineWidth=8; ctx.beginPath(); ctx.moveTo(this.x,this.y); ctx.lineTo(this.x+Math.cos(this.aA)*22,this.y+Math.sin(this.aA)*22); ctx.stroke();
+                    ctx.fillStyle=colors[this.t]; ctx.beginPath(); ctx.arc(this.x,this.y,6,0,Math.PI*2); ctx.fill();
+                } else if(this.r==='kurama') {
+                    ctx.fillStyle='#d35400'; ctx.fillRect(this.x-30,this.y-20,60,40); ctx.beginPath(); ctx.arc(this.x+(30*dir),this.y-10,20,0,Math.PI*2); ctx.fill();
+                    ctx.fillStyle='#111'; ctx.beginPath(); ctx.moveTo(this.x+(30*dir),this.y-25); ctx.lineTo(this.x+(20*dir),this.y-35); ctx.lineTo(this.x+(40*dir),this.y-25); ctx.fill();
+                    ctx.strokeStyle='#e67e22'; ctx.lineWidth=5; for(let i=0;i<9;i++){ ctx.beginPath(); ctx.moveTo(this.x-(25*dir),this.y+10); ctx.quadraticCurveTo(this.x-(60*dir),this.y-20+(i*5),this.x-(40*dir),this.y-40+(i*10)); ctx.stroke(); }
                 } else {
-                    ctx.fillStyle = teamColors[this.team] || '#fff';
-                    if (this.hasFire) ctx.fillStyle = '#ff4500'; 
-                    if (this.hasIce) ctx.fillStyle = '#a0e7ff'; 
+                    ctx.beginPath(); ctx.arc(this.x,this.y-16,10,0,Math.PI*2); ctx.fill(); ctx.fillRect(this.x-8,this.y-6,16,24); ctx.fillRect(this.x-8,this.y+18,6,14); ctx.fillRect(this.x+2,this.y+18,6,14);
+                    if(this.r==='knight'){ ctx.fillStyle='#8B4513'; ctx.fillRect(this.x-15,this.y-5,30,15); ctx.fillRect(this.x+(10*dir),this.y-15,12,15); ctx.fillRect(this.x-10,this.y+10,4,10); ctx.fillRect(this.x+10,this.y+10,4,10); ctx.fillStyle='#bdc3c7'; ctx.fillRect(this.x-5,this.y-15,10,15); ctx.beginPath(); ctx.arc(this.x,this.y-20,6,0,Math.PI*2); ctx.fill(); ctx.strokeStyle='#ecf0f1'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(this.x,this.y-10); ctx.lineTo(this.x+(20*dir),this.y-25); ctx.stroke(); }
+                    else if(this.r==='ninja'){ ctx.fillStyle='#111'; ctx.beginPath(); ctx.arc(this.x,this.y-16,10,0,Math.PI*2); ctx.fill(); ctx.fillRect(this.x-8,this.y-6,16,24); ctx.fillRect(this.x-8,this.y+18,6,14); ctx.fillRect(this.x+2,this.y+18,6,14); ctx.fillStyle=colors[this.t]; ctx.fillRect(this.x-10,this.y-20,20,5); }
+                    else if(this.r==='swapper'){ ctx.fillStyle='#111'; ctx.beginPath(); ctx.moveTo(this.x-10,this.y-20); ctx.lineTo(this.x,this.y-32); ctx.lineTo(this.x+10,this.y-20); ctx.fill(); ctx.fillStyle=this.ft>0?'white':colors[this.t]; ctx.beginPath(); ctx.arc(this.x,this.y-16,10,0,Math.PI*2); ctx.fill(); ctx.fillRect(this.x-8,this.y-6,16,24); ctx.fillStyle='#8e44ad'; ctx.fillRect(this.x-8,this.y+18,6,14); ctx.fillStyle='#222'; ctx.fillRect(this.x+2,this.y+18,6,14); }
+                    else if(this.r==='archer'){ ctx.fillStyle='#2ecc71'; ctx.beginPath(); ctx.arc(this.x,this.y-22,8,Math.PI,0); ctx.fill(); ctx.save(); ctx.translate(this.x,this.y-6); ctx.rotate(this.aA); ctx.strokeStyle='#8B4513'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(10,0,15,-Math.PI/2.5,Math.PI/2.5); ctx.stroke(); let dR=Math.max(0,(50-this.cd)/50),sP=-5+(10*dR); ctx.strokeStyle='#fff'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(15,-14); ctx.lineTo(sP,0); ctx.lineTo(15,14); ctx.stroke(); if(dR>0.2){ctx.strokeStyle='#ccc'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(sP,0); ctx.lineTo(18,0); ctx.stroke();} ctx.restore(); }
+                    else if(this.r==='shifter'){ ctx.fillStyle='#0ff'; ctx.beginPath(); ctx.arc(this.x,this.y-32,5,0,Math.PI*2); ctx.fill(); }
+                    else if(this.r==='luffy'){ ctx.fillStyle='#f1c40f'; ctx.beginPath(); ctx.ellipse(this.x,this.y-22,14,4,0,0,Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(this.x,this.y-22,8,Math.PI,0); ctx.fill(); ctx.fillStyle='red'; ctx.fillRect(this.x-8,this.y-23,16,3); }
+                    else if(this.r==='gojo'){ ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(this.x,this.y-20,11,Math.PI,0); ctx.fill(); ctx.fillStyle='#111'; ctx.fillRect(this.x-10,this.y-18,20,6); }
+                    else if(this.r==='goku'){ ctx.fillStyle='#111'; for(let i=0;i<5;i++){ctx.beginPath(); ctx.moveTo(this.x,this.y-16); ctx.lineTo(this.x-15+(i*7),this.y-30); ctx.lineTo(this.x+5,this.y-16); ctx.fill();} ctx.fillStyle='#e67e22'; ctx.fillRect(this.x-8,this.y-6,16,24); }
+                    else if(this.r==='naruto'){ ctx.fillStyle='#f1c40f'; for(let i=0;i<4;i++){ctx.beginPath(); ctx.moveTo(this.x,this.y-16); ctx.lineTo(this.x-12+(i*8),this.y-28); ctx.lineTo(this.x+2,this.y-16); ctx.fill();} ctx.fillStyle='#111'; ctx.fillRect(this.x+(3*dir),this.y-16,4,1); ctx.fillRect(this.x+(3*dir),this.y-14,4,1); }
                 }
 
-                let dir = Math.cos(this.aimAngle) >= 0 ? 1 : -1;
-                if(this.vx !== 0) dir = this.vx >= 0 ? 1 : -1;
-
-                // --- ANIME ABILITY EFFECTS ---
-                if (this.role === 'luffy' && this.punchTimer > 0) {
-                    ctx.strokeStyle = '#f1c27d'; ctx.lineWidth = 6;
-                    ctx.beginPath(); ctx.moveTo(this.x, this.y); ctx.lineTo(this.punchX, this.punchY); ctx.stroke();
-                    ctx.fillStyle = '#e67e22'; ctx.beginPath(); ctx.arc(this.punchX, this.punchY, 15, 0, Math.PI*2); ctx.fill();
-                    this.punchTimer--;
-                }
-                if (this.role === 'goku' && this.kamehamehaTimer > 0) {
-                    ctx.fillStyle = `rgba(0, 255, 255, ${this.kamehamehaTimer/60})`;
-                    ctx.fillRect(0, this.y - 40, canvas.width, 80);
-                    ctx.fillStyle = `rgba(255, 255, 255, ${this.kamehamehaTimer/60})`;
-                    ctx.fillRect(0, this.y - 20, canvas.width, 40);
-                    this.kamehamehaTimer--;
-                }
-                if (this.role === 'gojo' && this.gojoTimer > 0) {
-                    ctx.beginPath(); ctx.arc(this.x, this.y, (30 - this.gojoTimer)*5, 0, Math.PI*2);
-                    if(this.gojoAttack === 1) { ctx.fillStyle = `rgba(255, 0, 0, ${this.gojoTimer/30})`; ctx.fill(); }
-                    if(this.gojoAttack === 2) { ctx.fillStyle = `rgba(0, 0, 255, ${this.gojoTimer/30})`; ctx.fill(); }
-                    if(this.gojoAttack === 3) { 
-                        ctx.fillStyle = `rgba(142, 68, 173, ${this.gojoTimer/30})`; 
-                        ctx.fillRect(0, this.y - 60, canvas.width, 120); // Purple is a massive beam
-                    }
-                    this.gojoTimer--;
-                }
-
-                // --- CHARACTER BODIES ---
-                if (this.role === 'kurama') {
-                    ctx.fillStyle = '#d35400';
-                    ctx.fillRect(this.x - 30, this.y - 20, 60, 40); // Body
-                    ctx.beginPath(); ctx.arc(this.x + (30*dir), this.y - 10, 20, 0, Math.PI*2); ctx.fill(); // Head
-                    ctx.fillStyle = '#111'; ctx.beginPath(); ctx.moveTo(this.x+(30*dir), this.y-25); ctx.lineTo(this.x+(20*dir), this.y-35); ctx.lineTo(this.x+(40*dir), this.y-25); ctx.fill(); // Ears
-                    ctx.strokeStyle = '#e67e22'; ctx.lineWidth = 5;
-                    for(let i=0; i<9; i++) { // 9 Tails
-                        ctx.beginPath(); ctx.moveTo(this.x - (25*dir), this.y + 10);
-                        ctx.quadraticCurveTo(this.x - (60*dir), this.y - 20 + (i*5), this.x - (40*dir), this.y - 40 + (i*10)); ctx.stroke();
-                    }
-                }
-                else {
-                    // Standard Body
-                    ctx.beginPath(); ctx.arc(this.x, this.y - 16, 10, 0, Math.PI * 2); ctx.fill();
-                    ctx.fillRect(this.x - 8, this.y - 6, 16, 24);
-                    ctx.fillRect(this.x - 8, this.y + 18, 6, 14); ctx.fillRect(this.x + 2, this.y + 18, 6, 14);
-
-                    // Cosmetics
-                    if (this.role === 'knight') {
-                        ctx.fillStyle = '#7f8c8d'; ctx.fillRect(this.x - 10, this.y - 6, 20, 24); 
-                        // Horse
-                        ctx.fillStyle = '#8B4513'; ctx.fillRect(this.x-15, this.y+5, 30, 15); ctx.fillRect(this.x+(10*dir), this.y-5, 10, 15);
-                    } 
-                    else if (this.role === 'ninja') {
-                        ctx.fillStyle = '#222'; ctx.fillRect(this.x - 8, this.y - 18, 16, 6); 
-                    } 
-                    else if (this.role === 'archer') {
-                        ctx.fillStyle = '#2ecc71'; ctx.beginPath(); ctx.arc(this.x, this.y - 22, 6, Math.PI, 0); ctx.fill();
-                        ctx.strokeStyle = '#8B4513'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(this.x+(10*dir), this.y-6, 15, -Math.PI/2.5, Math.PI/2.5); ctx.stroke();
-                    }
-                    else if (this.role === 'luffy') {
-                        // Straw Hat
-                        ctx.fillStyle = '#f1c40f'; ctx.beginPath(); ctx.ellipse(this.x, this.y-22, 14, 4, 0, 0, Math.PI*2); ctx.fill();
-                        ctx.beginPath(); ctx.arc(this.x, this.y-22, 8, Math.PI, 0); ctx.fill();
-                        ctx.fillStyle = 'red'; ctx.fillRect(this.x-8, this.y-23, 16, 3);
-                    }
-                    else if (this.role === 'gojo') {
-                        // White Hair & Blindfold
-                        ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(this.x, this.y-20, 11, Math.PI, 0); ctx.fill();
-                        ctx.fillStyle = '#111'; ctx.fillRect(this.x-10, this.y-18, 20, 6);
-                    }
-                    else if (this.role === 'goku') {
-                        // Spiky Hair & Orange Gi
-                        ctx.fillStyle = '#111'; 
-                        for(let i=0; i<5; i++) { ctx.beginPath(); ctx.moveTo(this.x, this.y-16); ctx.lineTo(this.x-15+(i*7), this.y-30); ctx.lineTo(this.x+5, this.y-16); ctx.fill(); }
-                        ctx.fillStyle = '#e67e22'; ctx.fillRect(this.x - 8, this.y - 6, 16, 24);
-                    }
-                    else if (this.role === 'naruto') {
-                        // Spiky Yellow Hair & Whiskers
-                        ctx.fillStyle = '#f1c40f'; 
-                        for(let i=0; i<4; i++) { ctx.beginPath(); ctx.moveTo(this.x, this.y-16); ctx.lineTo(this.x-12+(i*8), this.y-28); ctx.lineTo(this.x+2, this.y-16); ctx.fill(); }
-                        ctx.fillStyle = '#111'; ctx.fillRect(this.x+(3*dir), this.y-16, 4, 1); ctx.fillRect(this.x+(3*dir), this.y-14, 4, 1);
-                    }
-                }
-
-                if (this.weapon && !this.isAnime) {
-                    ctx.strokeStyle = '#ecf0f1'; ctx.lineWidth = 4; ctx.beginPath();
-                    let length = this.weapon === 'spear' ? 40 : 24; 
-                    ctx.moveTo(this.x, this.y); ctx.lineTo(this.x + Math.cos(this.aimAngle) * length, this.y + Math.sin(this.aimAngle) * length); ctx.stroke();
-                }
-
-                // HP Bar
-                let hpBarY = this.y - (this.role === 'kurama' ? 55 : 40);
-                ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(this.x - 15, hpBarY, 30, 4);
-                let hpRatio = Math.min(1.0, Math.max(0, this.hp / this.maxHp)); 
-                ctx.fillStyle = hpRatio > 0.4 ? '#2ecc71' : '#e74c3c'; 
-                ctx.fillRect(this.x - 15, hpBarY, hpRatio * 30, 4);
-
+                let aS = this.r==='elephant'?60:(this.r==='cannon'?0:40);
+                if(aS>0){ ctx.lineWidth=3; if(this.hL){ctx.strokeStyle='#f1c40f'; ctx.beginPath(); ctx.arc(this.x,this.y,aS+4,0,Math.PI*2); ctx.stroke();} if(this.hF && this.ft<=0){ctx.strokeStyle='#e74c3c'; ctx.beginPath(); ctx.arc(this.x,this.y,aS,0,Math.PI*2); ctx.stroke();} if(this.hW){ctx.strokeStyle='rgba(255,255,255,0.8)'; ctx.beginPath(); ctx.arc(this.x,this.y,aS,0,Math.PI*2); ctx.stroke();} }
+                if(this.blnd>0){ ctx.fillStyle='#111'; ctx.beginPath(); ctx.arc(this.x,this.y-(this.r==='elephant'?40:28),10,0,Math.PI*2); ctx.fill(); }
+                if(this.wpn && !this.isA && this.r!=='elephant' && this.r!=='cannon' && this.r!=='knight' && this.r!=='archer'){ ctx.strokeStyle='#ecf0f1'; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(this.x,this.y); ctx.lineTo(this.x+Math.cos(this.aA)*(this.wpn==='spear'?40:24),this.y+Math.sin(this.aA)*(this.wpn==='spear'?40:24)); ctx.stroke(); }
+                
+                if(this.r!=='cannon'){ let hy=this.y-(this.r==='elephant'?55:(this.r==='kurama'?45:40)); ctx.fillStyle='rgba(0,0,0,0.5)'; ctx.fillRect(this.x-15,hy,30,4); let hR=Math.min(1.2,this.hp/this.mHp); ctx.fillStyle=hR>1?'#f1c40f':(hR>0.4?'#2ecc71':'#e74c3c'); ctx.fillRect(this.x-15,hy,hR*30,4); }
                 ctx.restore();
             }
 
             update() {
-                if (this.cooldown > 0) this.cooldown--;
-                if (this.dashTimer > 0) this.dashTimer--;
+                if(this.cd>0) this.cd--; if(this.pCd>0) this.pCd--; if(this.dT>0) this.dT--; this.age++;
+                let pop = ppl.filter(p=>p.t===this.t).length;
 
-                let nearestEnemy = null;
-                let minDist = Infinity;
-
-                people.forEach(other => {
-                    if (other.team !== this.team && other.hp > 0) {
-                        // Anime chars ignore walls
-                        let isBlockedByWall = !wallOpen && !this.isAnime && !other.isAnime && ((this.team === 'blue' && other.x > canvas.width / 2) || (this.team === 'red' && other.x < canvas.width / 2));
-                        if (!isBlockedByWall) {
-                            let d = Math.hypot(this.x - other.x, this.y - other.y);
-                            if (d < minDist) { minDist = d; nearestEnemy = other; }
-                        }
+                // Civ
+                if(!wallOpen && civOn && !this.isA && this.r!=='cannon' && this.r!=='kurama') {
+                    if(!this.task) {
+                        if(this.age>100 && this.age%300===0 && this.r!=='elephant' && pop<50) this.task='house';
+                        else if(this.age>180 && !this.wpn && this.r!=='elephant' && !this.cW) {this.task='stonebox';this.cW=true;}
+                        else if(this.age>600 && !(this.hF||this.hI||this.hW||this.hL) && !this.cP) {this.task='shrine';this.cP=true;}
+                        else if(this.age===480 && this.r==='normal') { let rls=['archer','knight','ninja']; this.r=rls[Math.floor(Math.random()*rls.length)]; if(this.r==='knight'){this.mHp=150;this.hp=150;} }
                     }
-                });
-
-                let speedLimit = this.isAnime ? 4.5 : (this.role === 'knight' ? 4.0 : 3.0);
-                if (this.role === 'goku') speedLimit = 6.0;
-                if (this.role === 'kurama') speedLimit = 2.0;
-                if (this.dashTimer > 0) speedLimit = 15.0; 
-
-                if (nearestEnemy) {
-                    let angle = Math.atan2(nearestEnemy.y - this.y, nearestEnemy.x - this.x);
-                    this.aimAngle = angle;
-
-                    // --- ANIME LOGIC ---
-                    if (this.role === 'luffy' && minDist < canvas.width/2 && this.cooldown <= 0) {
-                        this.punchX = nearestEnemy.x; this.punchY = nearestEnemy.y;
-                        this.punchTimer = 15; this.cooldown = 300; // 5 sec
-                        nearestEnemy.hp -= 150; nearestEnemy.flashTimer = 10;
-                        nearestEnemy.vx += Math.cos(angle)*20; nearestEnemy.vy += Math.sin(angle)*20; // Massive knockback
-                    }
-                    
-                    if (this.role === 'gojo' && minDist < 300 && this.cooldown <= 0) {
-                        this.gojoTimer = 30; this.cooldown = 200;
-                        let roll = Math.random();
-                        if(roll < 0.33) {
-                            this.gojoAttack = 1; // Red: Repel
-                            people.forEach(p => { if(p.team !== this.team && Math.hypot(this.x-p.x, this.y-p.y) < 150) {
-                                p.hp -= 80; let ang = Math.atan2(p.y-this.y, p.x-this.x); p.vx += Math.cos(ang)*25; p.vy += Math.sin(ang)*25;
-                            }});
-                        } else if (roll < 0.66) {
-                            this.gojoAttack = 2; // Blue: Attract
-                            people.forEach(p => { if(p.team !== this.team && Math.hypot(this.x-p.x, this.y-p.y) < 250) {
-                                p.hp -= 50; let ang = Math.atan2(p.y-this.y, p.x-this.x); p.vx -= Math.cos(ang)*20; p.vy -= Math.sin(ang)*20;
-                            }});
-                        } else {
-                            this.gojoAttack = 3; // Purple: Erase
-                            people.forEach(p => { if(p.team !== this.team && Math.abs(p.y - this.y) < 60) p.hp -= 300; });
-                        }
-                    }
-
-                    if (this.role === 'goku' && minDist < 400 && !this.usedKamehameha) {
-                        this.usedKamehameha = true; this.kamehamehaTimer = 60;
-                        people.forEach(p => { if(p.team !== this.team && Math.abs(p.y - this.y) < 60) p.hp -= 9999; });
-                    }
-
-                    if (this.role === 'naruto' && this.cooldown <= 0) {
-                        let k = new Person(this.x, this.y, this.team, 'kurama');
-                        people.push(k); this.cooldown = 600; // 10 sec to summon again
-                    }
-
-                    // Shifter (immune to Anime steal)
-                    if (this.isShifter && this.cooldown <= 0 && minDist < 150 && !nearestEnemy.isShifter && !nearestEnemy.isAnime) {
-                        this.role = nearestEnemy.role; nearestEnemy.role = 'normal';
-                        if (nearestEnemy.hasFire) { this.hasFire = true; nearestEnemy.hasFire = false; }
-                        if (nearestEnemy.hasIce) { this.hasIce = true; nearestEnemy.hasIce = false; }
-                        if (nearestEnemy.weapon) { this.weapon = nearestEnemy.weapon; nearestEnemy.weapon = null; }
-                        this.cooldown = 10; nearestEnemy.flashTimer = 10;
-                        nearestEnemy.vx -= Math.cos(angle) * 15; nearestEnemy.vy -= Math.sin(angle) * 15;
-                    }
-                    
-                    if ((this.hasFire || this.hasIce) && minDist < 300 && this.cooldown <= 0 && (wallOpen || Math.abs(this.x - nearestEnemy.x) > 30)) {
-                        let type = this.hasFire ? 'fire' : 'ice';
-                        projectiles.push(new Projectile(this.x, this.y, nearestEnemy, 10, this.team, type));
-                        this.cooldown = 60; this.vx -= Math.cos(angle) * 5; this.vy -= Math.sin(angle) * 5;
-                    }
-
-                    if (!this.isAnime && this.role !== 'archer' && minDist < 150 && minDist > 50 && this.cooldown <= 0 && this.dashTimer <= 0) {
-                        this.dashTimer = 10; this.cooldown = 80;
-                        this.vx += Math.cos(angle) * 15; this.vy += Math.sin(angle) * 15;
-                    }
-
-                    if (this.role === 'swapper' && this.cooldown <= 0 && minDist < 150) {
-                        let possibleTargets = people.filter(p => p !== this && p.hp > 0 && !p.isAnime);
-                        if (possibleTargets.length > 0) {
-                            nearestEnemy.hp -= 10; nearestEnemy.flashTimer = 5;
-                            nearestEnemy.vx += Math.cos(angle) * 10; nearestEnemy.vy += Math.sin(angle) * 10;
-                            let target = possibleTargets[Math.floor(Math.random() * possibleTargets.length)];
-                            let tempX = this.x; let tempY = this.y;
-                            this.x = target.x; this.y = target.y; target.x = tempX; target.y = tempY;
-                            this.cooldown = 20; this.dashTimer = 0;
-                        }
-                    }
-                    else if (this.role === 'ninja') {
-                        if (minDist < 60 && minDist > 30) {
-                            let orbitAngle = angle + (Math.PI / 2) * this.ninjaOrbitDir;
-                            this.vx += Math.cos(orbitAngle) * 0.6; this.vy += Math.sin(orbitAngle) * 0.6;
-                        } else {
-                            this.vx += Math.cos(angle) * 0.4; this.vy += Math.sin(angle) * 0.4;
-                        }
-                    }
-                    else if (this.role === 'archer') {
-                        if (minDist < 300 && (wallOpen || Math.abs(this.x - nearestEnemy.x) > 30)) {
-                            if (this.cooldown <= 0) {
-                                projectiles.push(new Projectile(this.x, this.y, nearestEnemy, 8, this.team, 'normal'));
-                                this.cooldown = 50;
+                    if(this.task) {
+                        let tB=null, mD=Infinity; bldgs.forEach(b=>{ if(b.t===this.t && b.typ===this.task){ let d=Math.hypot(this.x-b.x,this.y-b.y); if(d<mD){mD=d;tB=b;} }});
+                        if(!tB) bldgs.push(new Bldg(this.x,this.y,this.t,this.task));
+                        else {
+                            let d=Math.hypot(this.x-tB.x,this.y-tB.y);
+                            if(d>30){ this.vx+=Math.cos(Math.atan2(tB.y-this.y,tB.x-this.x))*0.4; this.vy+=Math.sin(Math.atan2(tB.y-this.y,tB.x-this.x))*0.4; }
+                            else {
+                                this.vx*=0.5; this.vy*=0.5; this.tTmr++;
+                                if(this.task==='stonebox') this.x+=Math.sin(this.tTmr*0.8)*2; if(this.task==='shrine') this.y+=Math.sin(this.tTmr*0.3)*1.5;
+                                if(this.tTmr>80){
+                                    if(this.task==='house' && pop<50) ppl.push(new Person(this.x+15,this.y+15,this.t,'normal'));
+                                    else if(this.task==='stonebox') this.wpn=Math.random()>0.5?'sword':'spear';
+                                    else if(this.task==='shrine') { let r=Math.random(); if(r<0.25)this.hF=true; else if(r<0.5)this.hI=true; else if(r<0.75)this.hW=true; else this.hL=true; }
+                                    this.task=null; this.tTmr=0;
+                                }
                             }
-                            if (minDist < 120) { this.vx -= Math.cos(angle) * 0.3; this.vy -= Math.sin(angle) * 0.3; }
-                        } else {
-                            this.vx += Math.cos(angle) * 0.2; this.vy += Math.sin(angle) * 0.2;
                         }
-                    }
-                    else if (this.dashTimer <= 0) {
-                        let accel = this.isAnime ? 0.3 : 0.2;
-                        if(this.role === 'kurama') accel = 0.1;
-                        this.vx += Math.cos(angle) * accel; this.vy += Math.sin(angle) * accel;
-                    }
-                } else {
-                    this.vx += (Math.random() - 0.5) * 0.5; this.vy += (Math.random() - 0.5) * 0.5;
+                    } else { this.wA+=(Math.random()-0.5)*0.4; let ws=this.r==='elephant'?0.28:0.3; this.vx+=Math.cos(this.wA)*ws; this.vy+=Math.sin(this.wA)*ws; }
                 }
 
-                this.vx *= 0.88; this.vy *= 0.88;
-                if (this.freezeTimer > 0) speedLimit = 0.4; 
-                let speed = Math.hypot(this.vx, this.vy);
-                if (speed > speedLimit) { this.vx = (this.vx / speed) * speedLimit; this.vy = (this.vy / speed) * speedLimit; }
+                let nE=null, mD=Infinity;
+                if(this.hW && this.r!=='cannon'){ ppl.forEach(o=>{ if(o.t!==this.t && o.hp>0){ let d=Math.hypot(this.x-o.x,this.y-o.y); if(d<100){ let a=Math.atan2(o.y-this.y,o.x-this.x), f=(100-d)*0.1; o.vx+=Math.cos(a)*f; o.vy+=Math.sin(a)*f; o.hp-=0.1; }}}); }
+                
+                if((wallOpen||!civOn||this.isA) && this.blnd<=0) {
+                    this.task=null; this.tTmr=0;
+                    ppl.forEach(o=>{ if(o.t!==this.t && o.hp>0){ let bW=!wallOpen&&!this.isA&&!o.isA&&((this.t==='blue'&&o.x>cvs.width/2)||(this.t==='red'&&o.x<cvs.width/2)); if(!bW){ let d=Math.hypot(this.x-o.x,this.y-o.y); if(d<mD){mD=d;nE=o;} } }});
+                } else { this.blnd--; }
 
-                this.x += this.vx; this.y += this.vy;
-                if (this.freezeTimer > 0) this.freezeTimer--;
+                let sL = this.isA?4.5:(this.r==='cannon'?0.5:(this.r==='elephant'?2.85:(this.r==='knight'?4.0:3.0)));
+                if(this.r==='goku') sL=6.0; if(this.r==='kurama') sL=2.0; if(this.dT>0) sL=15.0;
 
-                if (!wallOpen && !this.isAnime) {
-                    let centerX = canvas.width / 2;
-                    if (this.team === 'blue' && this.x > centerX - 15) { this.x = centerX - 15; this.vx *= -0.5; } 
-                    else if (this.team === 'red' && this.x < centerX + 15) { this.x = centerX + 15; this.vx *= -0.5; }
-                }
-
-                let rad = this.role === 'kurama' ? 30 : 15;
-                if (this.x < rad) { this.x = rad; this.vx *= -0.5; }
-                if (this.x > canvas.width - rad) { this.x = canvas.width - rad; this.vx *= -0.5; }
-                if (this.y < rad) { this.y = rad; this.vy *= -0.5; }
-                if (this.y > canvas.height - rad) { this.y = canvas.height - rad; this.vy *= -0.5; }
-
-                // Standard Melee Damage
-                if (nearestEnemy && this.role !== 'archer' && !['gojo','luffy'].includes(this.role) && this.dashTimer <= 0 && this.cooldown <= 0) {
-                    const dist = Math.hypot(this.x - nearestEnemy.x, this.y - nearestEnemy.y);
-                    let reach = this.role === 'kurama' ? 60 : (this.weapon === 'spear' ? 60 : 40);
+                if(nE) {
+                    let a = Math.atan2(nE.y-this.y, nE.x-this.x); this.aA = a;
+                    // Anime
+                    if(this.r==='luffy' && mD<cvs.width/2 && this.cd<=0) { this.pX=nE.x; this.pY=nE.y; this.pTmr=15; this.cd=300; nE.hp-=150; nE.ft=10; nE.vx+=Math.cos(a)*20; nE.vy+=Math.sin(a)*20; }
+                    if(this.r==='gojo' && mD<300 && this.cd<=0) {
+                        this.gTmr=30; this.cd=200; let rl=Math.random();
+                        if(rl<0.33) { this.gAtk=1; ppl.forEach(p=>{if(p.t!==this.t&&Math.hypot(this.x-p.x,this.y-p.y)<150){p.hp-=80; let ang=Math.atan2(p.y-this.y,p.x-this.x); p.vx+=Math.cos(ang)*25; p.vy+=Math.sin(ang)*25;}}); }
+                        else if(rl<0.66) { this.gAtk=2; ppl.forEach(p=>{if(p.t!==this.t&&Math.hypot(this.x-p.x,this.y-p.y)<250){p.hp-=50; let ang=Math.atan2(p.y-this.y,p.x-this.x); p.vx-=Math.cos(ang)*20; p.vy-=Math.sin(ang)*20;}}); }
+                        else { this.gAtk=3; ppl.forEach(p=>{if(p.t!==this.t&&Math.abs(p.y-this.y)<60) p.hp-=300;}); }
+                    }
+                    if(this.r==='goku' && mD<400 && !this.kUse) { this.kUse=true; this.kTmr=60; ppl.forEach(p=>{if(p.t!==this.t&&Math.abs(p.y-this.y)<60)p.hp-=9999;}); }
+                    if(this.r==='naruto' && this.cd<=0) { ppl.push(new Person(this.x,this.y,this.t,'kurama')); this.cd=600; }
                     
-                    if (dist < reach && (wallOpen || this.isAnime || nearestEnemy.isAnime || Math.abs(this.x - nearestEnemy.x) > 30)) {
-                        let dmg = 1.0;
-                        if (this.role === 'knight') dmg = 2.5;
-                        if (this.role === 'ninja') dmg = 1.5;
-                        if (this.role === 'goku') dmg = 15.0;
-                        if (this.role === 'naruto') dmg = 5.0;
-                        if (this.role === 'kurama') dmg = 25.0;
-                        if (this.hasFire) dmg *= 1.5;
-                        if (this.weapon === 'sword') dmg += 1.0;
-                        if (this.weapon === 'spear') dmg += 0.8;
-                        
-                        nearestEnemy.hp -= dmg;
-                        nearestEnemy.flashTimer = 5; 
-                        this.cooldown = this.role === 'kurama' ? 40 : (this.isAnime ? 15 : 25);
-                        
-                        let knockbackForce = this.role === 'kurama' ? 20 : (this.role === 'knight' ? 12 : 6);
-                        let angleToEnemy = Math.atan2(nearestEnemy.y - this.y, nearestEnemy.x - this.x);
-                        nearestEnemy.vx += Math.cos(angleToEnemy) * knockbackForce;
-                        nearestEnemy.vy += Math.sin(angleToEnemy) * knockbackForce;
+                    if((this.r==='cannon'||this.hC) && mD<500 && this.pCd<=0 && (wallOpen||Math.abs(this.x-nE.x)>30)){ projs.push(new Proj(this.x,this.y-(this.r==='elephant'?30:0),nE,75,this.t,'cannonball')); this.pCd=150; let rc=this.r==='elephant'?2:5; this.vx-=Math.cos(a)*rc; this.vy-=Math.sin(a)*rc; }
+                    
+                    if(this.r==='shifter' && this.cd<=0 && mD<150 && !nE.isShifter && nE.r!=='cannon' && !nE.isA) {
+                        this.r=nE.r; nE.r='normal'; if(nE.hF){this.hF=true;nE.hF=false;} if(nE.hI){this.hI=true;nE.hI=false;} if(nE.hL){this.hL=true;nE.hL=false;} if(nE.hW){this.hW=true;nE.hW=false;} if(nE.wpn){this.wpn=nE.wpn;nE.wpn=null;}
+                        this.cd=10; nE.ft=10; nE.vx-=Math.cos(a)*15; nE.vy-=Math.sin(a)*15;
+                    }
+                    if((this.hF||this.hI) && mD<300 && this.pCd<=0 && (wallOpen||Math.abs(this.x-nE.x)>30)){ projs.push(new Proj(this.x,this.y,nE,10,this.t,this.hF?'fire':'ice')); this.pCd=60; this.vx-=Math.cos(a)*5; this.vy-=Math.sin(a)*5; }
+                    
+                    if(!this.isA && this.r!=='archer' && this.r!=='elephant' && this.r!=='cannon' && mD<150 && mD>50 && this.cd<=0 && this.dT<=0){ this.dT=10; this.cd=80; this.vx+=Math.cos(a)*15; this.vy+=Math.sin(a)*15; }
+                    
+                    if(this.r==='swapper' && this.cd<=0 && mD<150) {
+                        let pts = ppl.filter(p=>p!==this && p.r!=='cannon' && p.hp>0 && !p.isA);
+                        if(pts.length>0) { nE.hp-=10; nE.ft=5; nE.vx+=Math.cos(a)*10; nE.vy+=Math.sin(a)*10; let tgt=pts[Math.floor(Math.random()*pts.length)], tX=this.x, tY=this.y; this.x=tgt.x; this.y=tgt.y; tgt.x=tX; tgt.y=tY; this.cd=20; this.dT=0; }
+                    } else if(this.r==='knight' && this.hp<30) { this.vx-=Math.cos(a)*0.4; this.vy-=Math.sin(a)*0.4; }
+                    else if(this.r==='ninja') { if(mD<60 && mD>30){ let oA=a+(Math.PI/2)*this.nO; this.vx+=Math.cos(oA)*0.6; this.vy+=Math.sin(oA)*0.6; }else{ this.vx+=Math.cos(a)*0.4; this.vy+=Math.sin(a)*0.4; } }
+                    else if(this.r==='archer') { if(mD<300 && (wallOpen||Math.abs(this.x-nE.x)>30)){ if(this.cd<=0){ projs.push(new Proj(this.x,this.y,nE,8,this.t,'normal')); this.cd=50;} if(mD<120){this.vx-=Math.cos(a)*0.3; this.vy-=Math.sin(a)*0.3;} }else{ this.vx+=Math.cos(a)*0.2; this.vy+=Math.sin(a)*0.2; } }
+                    else if(this.dT<=0 && this.r!=='cannon') { let ac=this.r==='elephant'?0.18:(this.isA?0.3:0.2); if(this.r==='kurama')ac=0.1; this.vx+=Math.cos(a)*ac; this.vy+=Math.sin(a)*ac; }
+                } else if((wallOpen||this.isA) && this.r!=='cannon') { this.wA+=(Math.random()-0.5)*0.4; let ws=this.r==='elephant'?0.28:0.3; this.vx+=Math.cos(this.wA)*ws; this.vy+=Math.sin(this.wA)*ws; }
 
-                        if (this.role !== 'kurama') {
-                            this.vx -= Math.cos(angleToEnemy) * 2; this.vy -= Math.sin(angleToEnemy) * 2;
-                        }
-                        
-                        if (this.hasIce) nearestEnemy.freezeTimer = 60; 
-                        if (this.role === 'ninja') {
-                            this.vx -= Math.cos(angleToEnemy) * 15; this.vy -= Math.sin(angleToEnemy) * 15;
-                        }
+                this.vx*=0.88; this.vy*=0.88; if(this.frz>0) sL=0.4; let spd=Math.hypot(this.vx,this.vy); if(spd>sL){this.vx=(this.vx/spd)*sL; this.vy=(this.vy/spd)*sL;}
+                this.x+=this.vx; this.y+=this.vy; if(this.frz>0) this.frz--;
+
+                if(!wallOpen && !this.isA) { let cx=cvs.width/2, r=this.r==='elephant'?25:15; if(this.t==='blue'&&this.x>cx-r){this.x=cx-r;this.vx*=-0.5;} else if(this.t==='red'&&this.x<cx+r){this.x=cx+r;this.vx*=-0.5;} }
+                let rad=this.r==='elephant'?25:(this.r==='kurama'?30:15); if(this.x<rad){this.x=rad;this.vx*=-0.5;} if(this.x>cvs.width-rad){this.x=cvs.width-rad;this.vx*=-0.5;} if(this.y<rad){this.y=rad;this.vy*=-0.5;} if(this.y>cvs.height-rad){this.y=cvs.height-rad;this.vy*=-0.5;}
+
+                // Melee
+                if(nE && this.r!=='archer' && this.r!=='cannon' && !['gojo','luffy'].includes(this.r) && this.dT<=0 && this.cd<=0) {
+                    const d=Math.hypot(this.x-nE.x, this.y-nE.y); let rh=this.r==='elephant'?70:(this.r==='kurama'?60:(this.wpn==='spear'?60:40));
+                    if(d<rh && (wallOpen || this.isA || nE.isA || Math.abs(this.x-nE.x)>30)) {
+                        let dmg=1.0; if(this.r==='elephant')dmg=8.0; if(this.r==='knight')dmg=2.5; if(this.r==='ninja')dmg=1.5; if(this.r==='goku')dmg=15; if(this.r==='naruto')dmg=5; if(this.r==='kurama')dmg=25; if(this.hF)dmg*=1.5; if(this.wpn==='sword')dmg+=1; if(this.wpn==='spear')dmg+=0.8; if(this.hL)dmg+=1.5;
+                        nE.hp-=dmg; nE.ft=5; this.cd=this.r==='elephant'?40:(this.r==='kurama'?40:(this.isA?15:25));
+                        let kF=this.r==='elephant'?25:(this.r==='kurama'?20:(this.r==='knight'?12:6)), pR=nE.r==='elephant'?0.2:(nE.r==='cannon'?0:1), aE=Math.atan2(nE.y-this.y,nE.x-this.x);
+                        nE.vx+=Math.cos(aE)*kF*pR; nE.vy+=Math.sin(aE)*kF*pR;
+                        if(this.r!=='elephant'&&this.r!=='kurama'){this.vx-=Math.cos(aE)*2; this.vy-=Math.sin(aE)*2;}
+                        if(this.hI)nE.frz=60; if(this.hL)nE.blnd=80; if(this.r==='ninja'){this.vx-=Math.cos(aE)*15; this.vy-=Math.sin(aE)*15;}
                     }
                 }
             }
         }
 
-        canvas.addEventListener('mousedown', (e) => {
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left; const y = e.clientY - rect.top;
-
-            if (currentPower.startsWith('spawn-')) {
-                let role = currentPower.split('-')[1];
-                let spawnTeam = ['luffy', 'gojo', 'naruto', 'goku'].includes(role) ? role : teams[currentTeamIdx];
-                people.push(new Person(x, y, spawnTeam, role));
-            } else {
-                people.forEach(p => {
-                    if (Math.hypot(p.x - x, p.y - y) < 60) {
-                        if (currentPower === 'fire') { p.hasFire = true; p.hasIce = false; }
-                        if (currentPower === 'ice') { p.hasIce = true; p.hasFire = false; }
-                        if (currentPower === 'weapon' && !p.isAnime) p.weapon = Math.random() > 0.5 ? 'sword' : 'spear';
-                        if (currentPower === 'strike') { p.hp = 0; p.flashTimer = 10; }
-                    }
-                });
-            }
+        cvs.addEventListener('mousedown', (e) => {
+            let r=cvs.getBoundingClientRect(), x=e.clientX-r.left, y=e.clientY-r.top;
+            if(curPwr==='cannon'){ let pE=false; ppl.forEach(p=>{if(p.r==='elephant'&&p.t===teams[tIdx]&&Math.hypot(p.x-x,p.y-y)<60&&!p.hC){p.hC=true;pE=true;}}); if(!pE&&ppl.filter(p=>p.t===teams[tIdx]).length<150) ppl.push(new Person(x,y,teams[tIdx],'cannon')); }
+            else if(curPwr.startsWith('spawn-')){ let rl=curPwr.split('-')[1], tm=['luffy','gojo','naruto','goku'].includes(rl)?rl:teams[tIdx]; if(ppl.filter(p=>p.t===tm).length<150) ppl.push(new Person(x,y,tm,rl)); }
+            else { ppl.forEach(p=>{ if(Math.hypot(p.x-x,p.y-y)<(p.r==='elephant'?120:100)){ if(curPwr==='fire'){p.hF=true;p.hI=p.hL=p.hW=false;} if(curPwr==='ice'){p.hI=true;p.hF=p.hL=p.hW=false;} if(curPwr==='light'){p.hL=true;p.hF=p.hI=p.hW=false;} if(curPwr==='wind'){p.hW=true;p.hF=p.hI=p.hL=false;} if(curPwr==='weapon'&&!p.isA&&p.r!=='elephant'&&p.r!=='cannon')p.wpn=Math.random()>0.5?'sword':'spear'; if(curPwr==='strike'){p.hp=0;p.ft=10;} }});}
         });
 
-        function drawBackground() {
-            ctx.fillStyle = '#2d5a27'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.strokeStyle = 'rgba(0,0,0,0.1)'; ctx.lineWidth = 1;
-            for(let i=0; i<canvas.width; i+=50) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,canvas.height); ctx.stroke(); }
-            for(let j=0; j<canvas.height; j+=50) { ctx.beginPath(); ctx.moveTo(0,j); ctx.lineTo(canvas.width,j); ctx.stroke(); }
-
-            if (!wallOpen) { ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(canvas.width / 2 - 5, 0, 10, canvas.height); }
-        }
-
         function animate() {
-            drawBackground();
-            people = people.filter(p => p.hp > 0);
-            
-            people.forEach(p => { p.update(); p.draw(); });
-            projectiles.forEach(proj => { proj.update(); proj.draw(); });
-            projectiles = projectiles.filter(p => p.active);
-
-            document.getElementById('total-count').innerText = people.length;
+            ctx.fillStyle='#2d5a27'; ctx.fillRect(0,0,cvs.width,cvs.height); ctx.strokeStyle='rgba(0,0,0,0.1)'; ctx.lineWidth=1;
+            for(let i=0;i<cvs.width;i+=50){ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i,cvs.height);ctx.stroke();} for(let j=0;j<cvs.height;j+=50){ctx.beginPath();ctx.moveTo(0,j);ctx.lineTo(cvs.width,j);ctx.stroke();}
+            if(!wallOpen){ctx.fillStyle='rgba(0,0,0,0.5)'; ctx.fillRect(cvs.width/2-5,0,10,cvs.height);}
+            bldgs.forEach(b=>b.draw()); ppl=ppl.filter(p=>p.hp>0); ppl.forEach(p=>{p.update();p.draw();});
+            projs.forEach(p=>{p.update();p.draw();}); projs=projs.filter(p=>p.act);
+            document.getElementById('total-count').innerText = ppl.length;
             requestAnimationFrame(animate);
-        }
-        animate();
+        } animate();
     </script>
 </body>
 </html>
